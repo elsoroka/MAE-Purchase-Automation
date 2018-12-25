@@ -1,11 +1,29 @@
 # MAE-Purchase-Automation
 Script tools to automate purchase management for UCI Engineering senior design / research teams.
 
+## Why do I need a purchase system?
+This system reduces errors in filling out purchase orders and ensures all purchases are recorded in one place.
+
+To make a purchase order with this system:
+1. Teammates fill out a PO Google Form.
+2. Once the form is submitted, the PO is automatically logged and announced in Slack. A copy of the PO is saved in Google Drive, and a PDF version is emailed to the submitter.
+3. Your purchasing manager can review the PO from Slack.
+4. Once the PO is approved, the email with the PDF can be easily forwarded to the department.
+
+Benefits of this system:
+1. All purchases are timestamped and logged in a central spreadsheet, making it easy to track inventory and project spending.
+2. POs cannot be submitted with critical information (such as item numbers or vendor contact information) missing.
+3. POs can be posted in Slack to ensure everyone is up-to-date with purchasing activities.
+
 ## How can I deploy this system for my team?
 Right now, you can copy the purchasing spreadsheets and form here:
 https://drive.google.com/drive/folders/1o56mLraFZ4qXF73F_-e-m_xOMNhXZT64?usp=sharing
 
-1. Copy the Purchase_Template spreadsheet. This is your purchase spreadsheet. Also copy the Purchase_Form and Blank_PO.
+**You should complete these steps from a team account or shared Google account, if you have one.**
+
+0. Copy the Purchase_Template spreadsheet. This is your purchase spreadsheet. Also copy the Purchase_Form and Blank_PO.
+
+1. Open the Blank_PO and fill in the PI Name and Account Name for your team. Do the same for the CurrentPO sheet in the Purchase_Template.
 
 2. Link the Purchase_Form and Purchase_Template following these instructions: https://support.google.com/docs/answer/2917686?hl=en
 

@@ -16,6 +16,7 @@ https://drive.google.com/drive/folders/1o56mLraFZ4qXF73F_-e-m_xOMNhXZT64?usp=sha
 **Specifically, you need:**
 
   4. The `targetFolderID` in `makePO.gs`. New POs will be saved to this folder.
+  
 What's a folder ID?
 
 Given the URL of a folder in Drive (NOT A REAL ID:) https://drive.google.com/drive/u/0/folders/1o56mLraFZ4qXF73F_-e-m_xOMNhXZT65
@@ -25,9 +26,9 @@ The folder ID is the part after /u/0/folders/, so this (FAKE) one is: 1o56mLraFZ
 
 **If you do not want new purchases announced in Slack,** do not complete steps 6, 7, or 8. Instead, locate the line in `main.gs` function `main()`, which calls `postPOToSlack()`, and comment it out.
 
-  6. Change the `slackIncomingWebhookUrl` to your team's webhook URL.
+  6. In `postToSlack.gs` change the `slackIncomingWebhookUrl` to your team's webhook URL.
 
-  7. Change the `postChannel` to the Slack channel you want to post in.
+  7. In `postToSlack.gs` change the `postChannel` to the Slack channel you want to post in.
 
   8. Optionally, change the `postIcon`, `postUser` and other cosmetic settings.
 
@@ -37,6 +38,7 @@ The folder ID is the part after /u/0/folders/, so this (FAKE) one is: 1o56mLraFZ
 
 ## I am having a problem.
 There are some test functions built into the various files which individually make a Slack post, send an email, or process a fake PO. Try running these from the script editor.
+
 If you still can't figure it out, let me know and I'll do my best to help.
 
 ## This is too much work. When is the user-friendly version coming out?

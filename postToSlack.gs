@@ -7,21 +7,6 @@
 // Begin customization //
 /////////////////////////
 
-// Alter this to match the incoming webhook url provided by Slack
-// REPLACE THIS WITH YOUR WEBHOOK URL
-var slackIncomingWebhookUrl = '';
-
-// Include # for public channels, omit it for private channels
-// REPLACE THIS WITH YOUR SLACK CHANNEL (example: var postChannel = "#purchasing")
-var postChannel = "";
-
-var postIcon = ":money_with_wings:";
-var postUser = "New Purchase Order";
-var postColor = "#0000DD";
-
-var messageFallback = "A teammate submitted a new PO";
-var messagePretext = "A teammate submitted a new PO.";
-
 var lineStartColumn = 9; // Zero-indexed column where the line items begin (depends on purchasing sheet format)
 var emailColumn = 1; // Zero-indexed column where the submitter's email address is (depends on purchasing sheet format)
 var vendorColumn = 2; // Zero-indexed column where the PO vendor is (depends on purchasing sheet format)
@@ -38,9 +23,50 @@ var priceOffset = 4;
 // End customization //
 ///////////////////////
 
-function testSlack()
+// The same global variable as in sidebar.html, should fix that so it's only defined once
+var slack_string_params = ["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"];
+
+function slackSavePrefs(slackProperties)
 {
-  submitValuesToSlack(undefined, "custom message");
+  var scriptProperties = PropertiesService.getScriptProperties();
+  for (var key in slackProperties)
+  {
+    if (slackProperties[key] == undefined)
+    {
+      scriptProperties.setProperty('slack-enable',"false");
+      throw ("Property " + key + " has unset or invalid value " + slackProperties[key]);
+    }
+  }
+  scriptProperties.setProperties(slackProperties);
+}
+
+function slackGetPrefs()
+{
+  var scriptProperties = PropertiesService.getScriptProperties();
+  var props = {'slack-enable':scriptProperties.getProperty('slack-enable')};
+  for (var i=0; i<slack_string_params.length; ++i)
+  {
+    props[slack_string_params[i]] = scriptProperties.getProperty(slack_string_params[i]);
+  }
+  return props;
+}
+
+function slackTestPost(url, channel, name, icon, text)
+{
+  var payload = {
+    "channel": channel,
+    "username": name,
+    "icon_emoji": icon,
+    "link_names": 1,
+    "text": text
+  };
+
+  var options = {
+    'method': 'post',
+    'payload': JSON.stringify(payload)
+  };
+  // Send the Slack message
+  return response = UrlFetchApp.fetch(url, options);
 }
 
 // See here for a description of object e https://developers.google.com/apps-script/guides/triggers/events#form-submit
@@ -55,12 +81,18 @@ function submitValuesToSlack(e, message) {
     message = messagePretext;
   }
   
+  var scriptProperties = PropertiesService.getScriptProperties();
+  if (scriptProperties.getProperty('slack-enable') == "false")
+  {
+    return;
+  }
+
   var attachments = constructAttachments(e.values, message);
   
   var payload = {
-    "channel": postChannel,
-    "username": postUser,
-    "icon_emoji": postIcon,
+    "channel": scriptProperties.getProperty('slack-channel'),
+    "username": scriptProperties.getProperty('slack-name'),
+    "icon_emoji": scriptProperties.getProperty('slack-icon'),
     "link_names": 1,
     "attachments": attachments
   };
@@ -70,7 +102,7 @@ function submitValuesToSlack(e, message) {
     'payload': JSON.stringify(payload)
   };
   // Send the Slack message
-  var response = UrlFetchApp.fetch(slackIncomingWebhookUrl, options);
+  var response = UrlFetchApp.fetch(scriptProperties.getProperty('slack-webhook'), options);
 }
 
 // Creates Slack message attachments which contain the data from the Google Form
@@ -84,11 +116,13 @@ var constructAttachments = function(values, message) {
   {
     Logger.log(values[i]);
   }
+  
+  var scriptProperties = PropertiesService.getScriptProperties();
   var attachments = [{
-    "fallback" : messageFallback,
+    "fallback" : scriptProperties.getProperty('slack-fallback'),
     "pretext" : message,
-    "mrkdwn_in" : ["pretext"],
-    "color" : postColor,
+    "mrkdwn_in" : [scriptProperties.getProperty('slack-pretext')],
+    "color" : scriptProperties.getProperty('slack-color'),
     "text"  : text
     //"fields" : fields
   }]

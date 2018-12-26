@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <!-- The CSS package above applies Google styling to buttons and other elements. -->
+
+    <style>
+    .branding-below {
+      bottom: 56px;
+      top: 0;
+    }
+    .branding-text {
+      left: 7px;
+      position: relative;
+      top: 3px;
+    }
+    .col-contain {
+      overflow: hidden;
+    }
+    .col-one {
+      float: left;
+      width: 50%;
+    }
+    .logo {
+      vertical-align: middle;
+    }
+    .radio-spacer {
+      height: 20px;
+    }
+    .width-100 {
+      width: 100%;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar branding-below">
+      <form>
+      
+        <div class="block form-group">
+          <input type="checkbox" id="slack-enable">
+          <label for="slack-enable" value="true">Enable Slack</label>
+          
+          <div>
+            <label class="description" for="slack-webhook">Slack Webhook </label>
+			<input id="slack-webhook" name="slack-webhook" class="element text medium" type="text" maxlength="1024" value=""/> 
+          </div>
+          <div>
+            <label class="description" for="slack-channel">Channel </label>
+			<input id="slack-channel" name="slack-channel" class="element text medium" type="text" maxlength="255" value=""/> 
+          </div>
+          <div>
+            <label class="description" for="slack-name">PO Bot Name </label>
+			<input id="slack-name" name="slack-name" class="element text medium" type="text" maxlength="255" value=""/> 
+          </div>
+          <div>
+            <label class="description" for="slack-icon">PO Bot Icon </label>
+			<input id="slack-icon" name="slack-icon" class="element text medium" type="text" maxlength="255" value=""/> 
+          </div>
+          <div>
+            <label class="description" for="slack-color">Message Color </label>
+			<input id="slack-color" name="slack-color" class="element text medium" type="text" maxlength="255" value=""/> 
+          </div>
+          <div>
+            <label class="description" for="slack-fallback">Message Fallback </label>
+			<input id="slack-fallback" name="slack-fallback" class="element text medium" type="text" maxlength="255" value=""/> 
+          </div>
+          <div>
+            <label class="description" for="slack-pretext">Message Pretext </label>
+			<input id="slack-pretext" name="slack-pretext" class="element text medium" type="text" maxlength="255" value=""/> 
+          </div>
+          
+        </div>
+        
+        <div class="block" id="button-bar">
+          <button id="slack-test">Test</button>
+          <button id="slack-save">Save</button>
+        </div>
+
+      </form>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+    
+    // AUGH a global variable
+    var slack_string_params = ["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"];
+
+    /**
+    * Reference:
+    * https://developers.google.com/gsuite/add-ons/editors/docs/quickstart/translate
+    */
+    
+      /**
+       * On document load, assign click handlers to each button and try to load the
+       * user's preferences if they exist
+       */
+      $(function() {
+        $('#slack-test').click(slackTest); // Test Slack settings
+        $('#slack-save').click(slackSave); // Test Slack settings
+        google.script.run.withSuccessHandler(slackLoadPrefs)
+            .withFailureHandler(showError).slackGetPrefs();
+      });
+
+      /**
+      * Make a test Slack post
+      */
+      function slackTest()
+      {
+        this.disabled = true;
+        $('#error').remove();
+        $('#info').remove();
+        google.script.run
+            .withSuccessHandler(
+              function(msg, element) {
+                showInfo(msg, $('#button-bar'));
+                element.disabled = false;
+              })
+            .withFailureHandler(
+              function(msg, element) {
+                showError(msg, $('#button-bar'));
+                element.disabled = false;
+              })
+            .withUserObject(this)
+            .slackTestPost($('#slack-webhook').val(),
+              $('#slack-channel').val(),
+              $('#slack-name').val(),
+              $('#slack-icon').val(),
+              "PO 2.0 test message");
+      }
+      
+      function slackSave()
+      {
+        this.disabled = true;
+        $('#error').remove();
+        $('#info').remove();
+        var slackPrefs = {'slack-enable':$('#slack-enable').is(':checked')};
+        for (i=0; i<slack_string_params.length; ++i)
+        {
+          slackPrefs[slack_string_params[i]] = $("#"+slack_string_params[i]).val();
+        }
+        google.script.run
+            .withSuccessHandler(
+              function(msg, element) {
+                showInfo("Configuration saved!", $('#button-bar'));
+                element.disabled = false;
+              })
+            .withFailureHandler(
+              function(msg, element) {
+                showError(msg, $('#button-bar'));
+                element.disabled = false;
+              })
+            .withUserObject(this)
+            .slackSavePrefs(slackPrefs);
+      }
+      
+      function slackLoadPrefs(prefs) // the parameter to this is the object returned by slackGetPrefs()
+      {
+        for (i=0; i<slack_string_params.length; ++i)
+        {
+          $("#"+slack_string_params[i]).val(prefs[slack_string_params[i]]);
+        }
+        if (prefs['slack-enable']=="true") // horrible code
+        {
+          $('#slack-enable').attr('checked', true);
+        }
+        showInfo("Loaded preferences", "#button-bar");
+      }
+      
+      /**
+       * Inserts a div that contains an error message after a given element.
+       *
+       * @param {string} msg The error message to display.
+       * @param {DOMElement} element The element after which to display the error.
+       */
+      function showError(msg, element) {
+        var div = $('<div id="error" class="error">' + msg + '</div>');
+        $(element).after(div);
+      }
+      // Show info message
+      function showInfo(msg, element) {
+        var div = $('<div id="info" class="info">' + msg + '</div>');
+        $(element).after(div);
+      }
+    </script>
+  </body>
+</html>

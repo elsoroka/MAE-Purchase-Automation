@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <!-- The CSS package above applies Google styling to buttons and other elements. -->
+  <?!= include('style'); ?>
+  
+  </head>
+  <style>
+  div.sidebar-branding-below
+  {
+    position:relative;
+  }
+  
+  </style>
+  <body>
+    <!-- Tab links -->
+    <div class="tab">
+      <button class="tablinks" onclick="loadTab('slackSidebar')">Slack</button>
+      <button class="tablinks" onclick="loadTab('emailSidebar')">Email</button>
+    </div>
+
+    <div class="sidebar-branding-below" id="content">
+      <?!= include('slackSidebar'); ?>
+    </div>
+  </body>
+</html>
+
+
+<script>
+
+function loadTab(name)
+{
+  var tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  document.getElementById(name).style.display = "block";
+}
+
+</script>

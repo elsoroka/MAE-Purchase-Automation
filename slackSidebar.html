@@ -137,6 +137,7 @@
       
       function pickerTest()
       {
+          this.disabled = true;
           google.script.run
             .withSuccessHandler(
               function(msg, element) {
@@ -149,6 +150,6 @@
                 element.disabled = false;
               })
             .withUserObject(this)
-            .getOAuthToken();
+            .showPicker();
       }
     </script>

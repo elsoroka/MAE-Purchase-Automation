@@ -1,5 +1,5 @@
 
-      <div id="slackSidebar" class="tabcontent">
+      <div id="slackSidebar" class="tabcontent" hidden>
       <form>
       
         <div class="block form-group">
@@ -40,7 +40,6 @@
         <div class="block" id="button-bar">
           <button id="slack-test">Test</button>
           <button id="slack-save">Save</button>
-          <button id="picker">Picker</button>
         </div>
 
       </form>
@@ -64,7 +63,6 @@
       $(function() {
         $('#slack-test').click(slackTest); // Test Slack settings
         $('#slack-save').click(slackSave); // Save Slack settings
-        $('#picker').click(pickerTest);
         google.script.run.withSuccessHandler(slackLoadPrefs)
             .withFailureHandler(showError).slackGetPrefs();
       });
@@ -134,22 +132,4 @@
         showInfo("Loaded preferences", "#button-bar");
       }
 
-      
-      function pickerTest()
-      {
-          this.disabled = true;
-          google.script.run
-            .withSuccessHandler(
-              function(msg, element) {
-                showInfo("picker open!", $('#button-bar'));
-                element.disabled = false;
-              })
-            .withFailureHandler(
-              function(msg, element) {
-                showError(msg, $('#button-bar'));
-                element.disabled = false;
-              })
-            .withUserObject(this)
-            .showPicker();
-      }
     </script>

@@ -4,31 +4,50 @@
     <base target="_top">
     <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
     <!-- The CSS package above applies Google styling to buttons and other elements. -->
+    <!-- "Googly" theme CSS to fix tabs. Comes from https://stackoverflow.com/questions/38052215/how-to-make-html-tabs-match-googles-css-spec-for-add-ons -->
+    <link rel="stylesheet" href="https://cdn.rawgit.com/mogsdad/e13b618322ec87ca8d28/raw/f1f96f797dadf968276c63de4df0bb04fb80646f/googly-jquery-ui.css">
+
   <?!= include('style'); ?>
   
   </head>
   <style>
   div.sidebar-branding-below
   {
+    padding-top:12px
     position:relative;
   }
   
   </style>
   <body>
     <!-- Tab links -->
-    <div class="tab">
+    <div class="tab" id="tabs">
+      <ul>
+        <li><a href="#generalSidebar" id="default">General</a></li>
+        <li><a href="#slackSidebar">Slack</a></li>
+        <li><a href="#emailSidebar">Email</a></li>
+      </ul>
+      <!--<button class="tablinks" id="default" onclick="loadTab('generalSidebar')">General</button>
       <button class="tablinks" onclick="loadTab('slackSidebar')">Slack</button>
       <button class="tablinks" onclick="loadTab('emailSidebar')">Email</button>
-    </div>
+    </div>-->
 
     <div class="sidebar-branding-below" id="content">
       <?!= include('slackSidebar'); ?>
+      <?!= include('generalSidebar'); ?>
     </div>
   </body>
 </html>
 
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <script>
+
+$(function() {
+  $( "#tabs" ).tabs();
+});
+
+// Open the default tab
+//document.getElementById("default").click();
 
 function loadTab(name)
 {

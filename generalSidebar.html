@@ -1,0 +1,38 @@
+<div id="generalSidebar" class="tabcontent">
+
+  <div class="block" id="button-bar">
+    <button id="picker" onclick="pickerTest()">Picker</button>
+  </div>
+  
+</div>
+
+<script>
+  /**
+  * On document load, assign click handlers to each button and try to load the
+  * user's preferences if they exist
+  */
+  /*
+  $(function()
+  {
+    $('#picker').click(pickerTest);
+  });
+    */
+  
+  function pickerTest()
+  {
+    this.disabled = true;
+    google.script.run
+    .withSuccessHandler(
+      function(msg, element) {
+        showInfo("picker open!", $('#button-bar'));
+        element.disabled = false;
+      })
+    .withFailureHandler(
+      function(msg, element) {
+        showError(msg, $('#button-bar'));
+        element.disabled = false;
+      })
+    .withUserObject(this)
+    .showPicker();
+  }
+</script>

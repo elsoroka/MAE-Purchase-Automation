@@ -5,7 +5,7 @@
     var DEVELOPER_KEY = 'AIzaSyDu3qDh80iRwQGYv_Nk5-auiM8ar9lF5rs'; // hmm this doesn't seem safe
     var DIALOG_DIMENSIONS = {width: 600, height: 425};
     var pickerApiLoaded = false;
-
+    
     /**
      * Loads the Google Picker API.
      */
@@ -22,7 +22,8 @@
      * that Picker needs is available in Apps Script. Otherwise, your Picker code
      * will need to declare its own OAuth scopes.
      */
-    function getOAuthToken() {
+    function getOAuthToken()
+    {
       google.script.run.withSuccessHandler(createPicker)
           .withFailureHandler(showError).getOAuthToken();
     }
@@ -35,12 +36,24 @@
      * @param {string} token An OAuth 2.0 access token that lets Picker access the
      *     file type specified in the addView call.
      */
-    function createPicker(token) {
-      if (pickerApiLoaded && token) {
+    function createPicker(token)
+    {
+      if (pickerApiLoaded && token)
+      {
+        // Recover whether the picker should be for a spreadsheet or folder
+        var type = document.getElementById('type').innerHTML;
+        var viewType = google.picker.ViewId.SPREADSHEETS;
+        if (type == 'f') // file
+        {
+          viewType = new google.picker.DocsView()
+          .setIncludeFolders(true) 
+          .setMimeTypes(MimeType.FOLDER)
+          .setSelectFolderEnabled(true);
+        }
         var picker = new google.picker.PickerBuilder()
             // Instruct Picker to display only spreadsheets in Drive. For other
             // views, see https://developers.google.com/picker/docs/#otherviews
-            .addView(google.picker.ViewId.SPREADSHEETS)
+            .addView(viewType)
             // Hide the navigation panel so that Picker fills more of the dialog.
             .enableFeature(google.picker.Feature.NAV_HIDDEN)
             // Hide the title bar since an Apps Script dialog already has a title.
@@ -72,18 +85,12 @@
       var action = data[google.picker.Response.ACTION];
       if (action == google.picker.Action.PICKED)
       {
-        //var doc = data[google.picker.Response.DOCUMENTS][0];
-        //var id = doc[google.picker.Document.ID];
-        //var url = doc[google.picker.Document.URL];
-        //var title = doc[google.picker.Document.NAME];
         var id = data.docs[0].id;
-        showError("file ID is " + id);
-        google.script.run.saveParam('file-id', id);
+        google.script.run.saveParam(document.getElementById('name').innerHTML, id);
         google.script.host.close();
       }
       else if (action == google.picker.Action.CANCEL)
       {
-        showError("cancelled");
         google.script.host.close();
       }
     }
@@ -97,11 +104,7 @@
       document.getElementById('result').innerHTML = 'Error: ' + message;
     }
   </script>
-
-
-  <div>
-    <!--<button onclick='getOAuthToken()'>Select a file</button>-->
-    <p id='result'></p>
-    <body onLoad="getOAuthToken()">
-  </div>
+    <div id="type" hidden><?=pickerType?></div>
+    <div id="name" hidden><?=paramName?></div>
+    <body onLoad="getOAuthToken()"></body>
   <script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>

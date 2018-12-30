@@ -1,30 +1,49 @@
-<div id="generalSidebar" class="tabcontent">
-
-  <div class="block" id="button-bar">
-    <button id="picker" onclick="pickerTest()">Picker</button>
+<div onLoad="loadSavedFileIds()" id="generalSidebar" class="tabcontent">
+   <!--separator-->
+   <div class="block"></div>
+  <div class="block">
+    The Purchase Spreadsheet will be linked to the New Purchase Order form. All purchases will be logged in this sheet.<br>
+    <button id="file-purchase-sheet" onclick="openPickerWindow('file-purchase-sheet', 's')">Link Purchase Spreadsheet</button>
+    <? var properties = PropertiesService.getScriptProperties();
+       var id = properties.getProperty('file-purchase-sheet');
+       var link = "";
+       if (id != null)
+      {
+        link = "https://docs.google.com/spreadsheets/d/" + id;?>
+        <a href="<?=link?>">Open Sheet</a>
+    <?}?>
+    </div>
+  <div class="block">
+    The PO template should be a blank purchase order form. For technical reasons, it is much simpler to copy an existing file than to create a new one.<br>
+    <button id="file-po-template" onclick="openPickerWindow('file-po-template', 's')">Link PO Template</button>
+    <?var id = properties.getProperty('file-po-template');
+      if (id != null)
+      {
+        link = "https://docs.google.com/spreadsheets/d/" + id;?>
+        <a href="<?=link?>">Open Sheet</a>
+    <?}?>
   </div>
-  
+  <div class="block" id="button-bar">
+    New purchase orders will be saved to this folder.<br>
+    <button id="folder-po" onclick="openPickerWindow('folder-po', 'f')">Select PO Destination Folder</button>
+    <?var id = properties.getProperty('folder-po');
+    if (id != null)
+       {
+         link = "https://drive.google.com/drive/u/0/folders/" + id;?>
+         <a href="<?=link?>">Open Sheet</a>
+       <?}?>
+  </div>
 </div>
 
 <script>
-  /**
-  * On document load, assign click handlers to each button and try to load the
-  * user's preferences if they exist
-  */
-  /*
-  $(function()
-  {
-    $('#picker').click(pickerTest);
-  });
-    */
-  
-  function pickerTest()
+
+  function openPickerWindow(paramName, type)
   {
     this.disabled = true;
     google.script.run
     .withSuccessHandler(
       function(msg, element) {
-        showInfo("picker open!", $('#button-bar'));
+        showInfo(paramName, $('#button-bar'));
         element.disabled = false;
       })
     .withFailureHandler(
@@ -33,6 +52,18 @@
         element.disabled = false;
       })
     .withUserObject(this)
-    .showPicker();
+    .showPicker(paramName, type);
   }
+  
+  function openById(name)
+  {
+    var properties = PropertiesService.getScriptProperties();
+    var id = properties.getProperty(name);
+    if (id == null)
+    {
+      showError("openById called on nonexistent script property " + name, $('#button-bar'));
+    }
+  }
+  
+  
 </script>

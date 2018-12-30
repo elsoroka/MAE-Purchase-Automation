@@ -49,7 +49,7 @@ function installDefaultPrefs()
 function showSidebar() {
   var ui = HtmlService.createTemplateFromFile('mainSidebar')
       .evaluate();
-      ui.setTitle('MAE-Purchase-Automation');
+      ui.setTitle('MAE Purchase Automation');
   SpreadsheetApp.getUi().showSidebar(ui);
 }
 
@@ -59,16 +59,25 @@ function include(filename) {
       .getContent();
 }
 
+function includeTemplate(filename) {
+  return HtmlService.createTemplateFromFile(filename)
+      .evaluate().getContent();
+}
+
 /**
  * Displays an HTML-service dialog in Google Sheets that contains client-side
  * JavaScript code for the Google Picker API.
  */
-function showPicker() {
-  var html = HtmlService.createHtmlOutputFromFile('pickerDialog.html')
+function showPicker(name, type)
+{
+  var html = HtmlService.createTemplateFromFile('pickerDialog');
+  html.paramName = name;
+  html.pickerType = type;
+  html = html.evaluate()
       .setWidth(600)
       .setHeight(425)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Select a file');
+  SpreadsheetApp.getUi().showModalDialog(html, 'Select a file ' + type);
 }
 
 /**
@@ -88,6 +97,6 @@ function getOAuthToken() {
 
 function saveParam(name, param)
 {
-  var scriptProperties = PropertiesService.getScriptProperties();
-  scriptProperties.setProperty(name, param);
+  var properties = PropertiesService.getScriptProperties();
+  properties.setProperty(name, param);
 }

@@ -120,3 +120,82 @@ function savePrefs(properties, enableKey)
   }
   scriptProperties.setProperties(properties);
 }
+
+/**
+  * Terrible hack function to copy the "template" files
+  * Will also save the file IDs
+  */
+function makeDefaultFiles()
+{
+  var templatePurchaseSheetId = "1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4";
+  var templateBlankPoId = "1ABemUrCoLAOrIYl-c0v2vDywPH2jqmDtAkpfuU0VdKw";
+  var templateFormId = "168qcipU4pT04LLsY_EQR_Z5iQhPWdBNeSZKRar7HQ6I";
+  // Set up to access script properties
+  var properties = PropertiesService.getScriptProperties();
+  // Get our system's root folder
+  var PoSystemRoot = properties.getProperty('folder-root');
+  if (PoSystemRoot == null) // the user has not set a root folder yet!
+  {
+    throw("Please set a root folder before running setup!");
+  }
+  PoSystemRoot = DriveApp.getFolderById(PoSystemRoot);
+  
+  // copySpreadsheet will return the file IDs
+  var purchaseSheetId = copySpreadsheet(templatePurchaseSheetId, "Purchase Master", PoSystemRoot).getId();
+  properties.setProperty('file-purchase-sheet', purchaseSheetId);
+  properties.setProperty('file-po-template', copySpreadsheet(templateBlankPoId, "PO Template", PoSystemRoot).getId());
+  // Install the form trigger on the file ID
+  //var purchaseSheetId = properties.getProperty('file-purchase-sheet');
+  installTrigger(purchaseSheetId);
+  // Copy the form template
+  var form = FormApp.openById(templateFormId);
+  var formData = DriveApp.getFileById(form.getId());
+  PoSystemRoot.createFile("Purchase Form", formData);
+}
+
+// Given the file ID of a template file, make a copy in the PO system root
+// Fails if no PO system root set in scriptProperties
+// Returns the Spreadsheet object for the new sheet
+function copySpreadsheet(templateId, newName, destination)
+{
+  // Open the template spreadsheet and make a copy
+  var ss = SpreadsheetApp.openById(templateId);
+  SpreadsheetApp.setActiveSpreadsheet(ss);
+  var ssCopy = ss.copy(newName);
+  var newFile = DriveApp.getFileById(ssCopy.getId());
+  // Now the copy is in the user root folder, and we want to move it
+  var userRoot = DriveApp.getRootFolder();
+  destination.addFile(newFile);
+  userRoot.removeFile(newFile);
+  return ssCopy;
+}
+
+// In the Script Editor, run initialize() at least once to make your code execute on form submit
+function installTrigger(sheetId) {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i in triggers) {
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
+  ScriptApp.newTrigger("purchaseForm")
+    .forSpreadsheet(SpreadsheetApp.openById(sheetId))
+    .onFormSubmit()
+    .create();
+}
+
+// Running the code in initialize() will cause this function to be triggered this on every Form Submit
+// See here for a description of object e https://developers.google.com/apps-script/guides/triggers/events#form-submit
+function purchaseForm(e)
+{
+  /*// Uncomment this to debug by running main without form trigger
+  
+   if (typeof e === "undefined") {
+     // e = {namedValues: {"Timestamp": ["Today"], "Email Address": ["esoroka@uci.edu"], "Vendor": ["Amazon"], "Vendor Website" : ["amazon.com"],"Lines 1 QTY": ["2"], "Line 1 Description" : ["Crappy hardware"], "Line 1 Item #": ["1234"], "Line 1 Price" : ["19.99"]}};
+     e = {values: ["Today", "cansatuci@gmail.com", "Download more RAM", "","downloadmoreram.com","Ground","Emiko", "3109196950","","4","GB", "Downloadable RAM","1234","9.99","yes","4","GB", "Extra shiny high-speed downloadable RAM","5678","19.99","no","","","","",""]};
+   }*/
+   
+  // newPO is the File object for the new PO
+  var newPO = makeNewPO(e.values);
+  addRecords(e.values);
+  submitValuesToSlack(e, e.values[nameColumn] + ", your PO is at " + newPO.getUrl());
+  emailPO(e.values[emailColumn], newPO);
+}

@@ -3,7 +3,6 @@
 // The POs will be saved to this folder.
 var targetFolderID = "";
 
-
 // ID of template PO file which is a blank PO with formatting in place
 // ENTER A TEMPLATE ID HERE - this is the ID for a template PO, which has the correct formatting in place
 var templateID = ""
@@ -25,27 +24,7 @@ var makeNewPO = function(values)
   var newSpreadsheet = exportWithTemplate(poSheetName, templateID, poName);
   return newSpreadsheet
 }
-// Deprecated in favor of exportWithTemplate
-/*
-// Export the currentPO sheet to a new Google Sheets document
-var exportToSheet = function(sheetName, exportName)
-{
-  var currentPO = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  var folder = DriveApp.getFolderById(targetFolderID);
-  var blankFile = DriveApp.getFileById(blankSheetID);
-  var exportedPO = SpreadsheetApp.open(blankFile.makeCopy(exportName,folder));
-  // Copy the sheet, this brings over the formatting but references will be broken
-  currentPO.copyTo(exportedPO);
-  // Do some cleanup of the new PO
-  // There is an empty sheet "Sheet1" in the new file; we want to get rid of it
-  exportedPO.deleteSheet(exportedPO.getSheetByName("Sheet1"));
-  // Get the VALUES in the CurrentPO sheet
-  var sourceValues  = currentPO.getDataRange().getValues();
-  // Copy VALUES to the new PO (overwriting broken references)
-  exportedPO.getSheets()[0].getRange(1,1,sourceValues.length, sourceValues[0].length).setValues(sourceValues);
-  return exportedPO; // Return file object
-}
-*/
+
 var exportWithTemplate = function(sheetName, templateID, exportName)
 {
   // Get the currentPO sheet

@@ -95,8 +95,14 @@
       }
     }
 
+function showError(msg)
+{
+  var error = document.getElementById("error");
+  error.innerHTML = msg;
+}
   </script>
     <div id="type" hidden><?=pickerType?></div>
     <div id="name" hidden><?=paramName?></div>
+    <div id="error"></div>
     <body onLoad="getOAuthToken()"></body>
   <script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>

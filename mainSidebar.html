@@ -13,8 +13,11 @@
   <style>
   div.sidebar-branding-below
   {
-    padding-top:12px
     position:relative;
+  }
+  div.message
+  {
+    padding-top:12px
   }
   
   </style>
@@ -26,11 +29,6 @@
         <li><a href="#slackSidebar">Slack</a></li>
         <li><a href="#emailSidebar">Email</a></li>
       </ul>
-      <!--<button class="tablinks" id="default" onclick="loadTab('generalSidebar')">General</button>
-      <button class="tablinks" onclick="loadTab('slackSidebar')">Slack</button>
-      <button class="tablinks" onclick="loadTab('emailSidebar')">Email</button>
-    </div>-->
-
     <div class="sidebar-branding-below" id="content">
       <?!= includeTemplate('generalSidebar'); ?>
       <?!= include('slackSidebar'); ?>

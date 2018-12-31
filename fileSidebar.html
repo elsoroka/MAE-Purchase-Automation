@@ -1,0 +1,119 @@
+<div id="fileSidebar" class="tabcontent">
+  <form onsubmit="return(false)">
+  <!--separator-->
+   <div class="block"></div>
+   <? // THE FOLLOWING BLOCK APPEARS ONLY IF 'folder-root' IS NOT SAVED, INDICATING A BRAND NEW INSTALLATION
+   var properties = PropertiesService.getScriptProperties();
+   if (properties.getProperty('folder-root') == null) // the user has not set up anything yet
+   {
+   ?>
+     <div class="block">
+      <p>For <strong>guided setup</strong> select a "home" folder for your purchase system to live in, then continue below.</p>
+      <button id="folder-root" class="blue" onclick="openPickerWindow('folder-root', 'f')">Select Home Folder</button>
+    </div>
+    <?} // END "NEW INSTALLATION" BLOCK ?>
+   <p> Fill out the parameters below and click "Build Purchase Tracker".
+   You will need a Google Sheets file representing a blank purchase order. MAE projects may obtain the file
+   <a href="https://docs.google.com/spreadsheets/d/1JwkjrOoqqr90rCP3AxT5QVSTaxD0cHbC0vtgOLPkmuU/">here</a> (File->Make a copy").
+   </p>
+   <div class="block">
+      <label class="description" for="po-statuses">Purchase Statuses (comma-separated) </label>
+	  <textarea class="width-100" id="po-statuses" rows="2"></textarea> 
+      <label class="description" for="po-start-status">New POs Start In Status </label>
+      <input id="po-start-status" name="po-start-status" class="element text medium" type="text" maxlength="255"/> 
+      <button id="file-po-template" onclick="openPickerWindow('file-po-template', 's')">Select PO Template</button>
+   </div>
+   <div>
+     <button id="create-purchase-sheet" onclick="runMakePoMaster()">Create Purchase Sheet</button>
+   </div>
+   </form>
+</div>
+
+<script>
+/**
+ * Try to load the email preferences if they exist
+ */
+$(function()
+{
+  var fileProps = {
+    strings:["po-start-status", "po-statuses"],
+    checkboxes:[]
+    };
+  google.script.run.withSuccessHandler(loadFilePrefs)
+    .withFailureHandler(showError).getPrefs(fileProps);
+});
+
+/** Expects: the prefs object with list of strings and list of checkboxes
+ * returned by getPrefs()
+ */
+function loadFilePrefs(prefs)
+{
+  for (var key in prefs.strings)
+  {
+    $("#"+key).val(prefs.strings[key]);
+  }
+  for (var key in prefs.checkboxes)
+  {
+    $('#'+key).attr('checked', (prefs.checkboxes[key]=="true"));
+  }
+  showInfo("Loaded file prefs");
+}
+
+function runSetUp(name)
+{
+  this.disabled=true;
+  // Check we have a PO template file
+  var properties = PropertiesService.getScriptProperties();
+  var templateId = properties.getProperty('file-po-template');
+  var folder = properties.getProperty('folder-root');
+  if (templateId == null) // there was no property! Halt
+  {
+    showError("Please select a PO template.");
+    return;
+  }
+  if (folder == null) // no root folder;
+  {
+    showError("Please select a folder to install the PO system");
+    return;
+  }
+  // Construct params
+  var ssName = $('purchase-sheet-name').val();
+  if (ssName.length == 0)
+  {
+    showError("Please enter a valid name for the spreadsheet");
+    return;
+  }
+  var params = {
+    name:ssName,
+    folder:folder,
+    statuses:$('po-statuses').val().split(","),
+    startStatus:$('po-start-status').val(),
+    poTemplateId:templateId,
+    };
+  // Create spreadsheet, and on success link the user to it.
+  google.script.run
+  .withSuccessHandler(function(fileId) {
+    showInfo("Created PO master spreadsheet. <a href='"+fileId.getUrl() + "'>Check it out here!</a>")
+    })
+  .withFailureHandler(function () {
+    showError("Error occurred! Couldn't create spreadsheet.")
+    })
+  .withUserObject(this)
+  .makePoMasterSheet(params);
+}
+
+function runSetUp(name)
+{
+  this.disabled=true;
+  google.script.run
+  .withSuccessHandler(function() {
+    showInfo("Successfully completed guided setup.")
+    })
+  .withFailureHandler(function () {
+    showError("Error occurred during guided setup!")
+    })
+  .withUserObject(this)
+  .copyDefaultFiles();
+}
+</script>
+

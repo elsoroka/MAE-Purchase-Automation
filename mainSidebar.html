@@ -26,11 +26,13 @@
     <div class="tab" id="tabs">
       <ul>
         <li><a href="#generalSidebar" id="default">General</a></li>
+        <li><a href="#fileSidebar">File Setup</a></li>
         <li><a href="#slackSidebar">Slack</a></li>
         <li><a href="#emailSidebar">Email</a></li>
       </ul>
     <div class="sidebar-branding-below" id="content">
       <?!= includeTemplate('generalSidebar'); ?>
+      <?!= includeTemplate('fileSidebar'); ?>
       <?!= include('slackSidebar'); ?>
       <?!= includeTemplate('emailSidebar'); ?>
     </div>

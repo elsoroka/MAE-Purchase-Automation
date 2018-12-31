@@ -1,22 +1,10 @@
 <div id="generalSidebar" class="tabcontent">
    <!--separator-->
    <div class="block"></div>
-   <? // THE FOLLOWING BLOCK APPEARS ONLY IF 'folder-root' IS NOT SAVED, INDICATING A BRAND NEW INSTALLATION
-   var properties = PropertiesService.getScriptProperties();
-   if (properties.getProperty('folder-root') == null) // the user has not set up anything yet
-   {
-   ?>
-     <div class="block">
-      <p>For <strong>automatic setup</strong> select a "home" folder for your purchase system to live in, then click Set Up to begin.</p>
-      <button id="folder-root" onclick="openPickerWindow('folder-root', 'f')">Select Home Folder</button>
-      <button id="set-up" class="blue" onclick="runSetUp()">Set Up</button>
-    </div>
-    <?} // END "NEW INSTALLATION" BLOCK ?>
-    <div class="block">
+   <? var properties = PropertiesService.getScriptProperties() ?>
       The options below allow you to manually link new files.
       You should be sure the columns match those of the default files provided during setup.<br>
       <strong>Results are not guaranteed.</strong><br>
-    </div>
     <div class="block">
       The Purchase Spreadsheet will be linked to the New Purchase Order form. All purchases will be logged in this sheet.
       If you link a new sheet, you must manually link the purchase form.<br>
@@ -80,20 +68,6 @@
       showError("openById called on nonexistent script property " + name);
     }
   }
-  
-function runSetUp(name)
-{
-  this.disabled=true;
-  google.script.run
-  .withSuccessHandler(function() {
-    showInfo("Successfully completed automatic setup.")
-    })
-  .withFailureHandler(function () {
-    showError("Error occurred during automatic setup!")
-    })
-  .withUserObject(this)
-  .makeDefaultFiles();
-}
 
 function reset(name)
 {

@@ -33,10 +33,16 @@
 // AUGH a global variable, even worse it's duplicated in emailFiles.gs
 var email_string_params = ["email-name", "email-body", "email-cc"];
 /**
- * Try to load the email preferences if they exist
+ * Try to load the file preferences if they exist
  */
 $(function()
 {
+  var fileProps = {
+    strings:["po-start-status", "po-statuses"],
+    checkboxes:[]
+    };
+  google.script.run.withSuccessHandler(loadFilePrefs)
+    .withFailureHandler(showError).getPrefs(fileProps);
   google.script.run.withSuccessHandler(emailLoadPrefs)
     .withFailureHandler(showError).emailGetPrefs();
 });
@@ -68,7 +74,6 @@ function emailLoadPrefs(emailPrefs)
   {
     $('#email-include-link').attr('checked', true);
   }
-  showInfo("Loaded email preferences", "#emailSidebar");
 }
 
 function emailSave()

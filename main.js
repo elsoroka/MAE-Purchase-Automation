@@ -41,7 +41,9 @@ function installDefaultPrefs()
    "email-enable":"true",
    "email-name":"PO System",
    "email-body":"Your PO is attached",
-   "email-include-link":"false"
+   "email-include-link":"false",
+   "po-statuses":"In Progress,Complete,Canceled,Submitted",
+   "po-start-status":"Submitted",
   }
   var scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.setProperties(defaults);
@@ -106,7 +108,40 @@ function saveParam(name, param)
   PropertiesService.getScriptProperties().setProperty(name, param);
 }
 
+/**
+  * Expects: an object with:
+  * [string] strings: a list of properties that are loaded into textfields
+  * [string] checkboxes: a list of properties that are loaded into checkboxes
+  * (Due to limitations of PropertiesService these will be "true" or "false")
+  */
+function getPrefs(prefs)
+{
+  var properties = PropertiesService.getScriptProperties();
+  var result = {
+    strings:{},
+    checkboxes:{}
+    };
+  result.strings = getPrefsHelper(properties, prefs.strings, result.strings);
+  result.checkboxes = getPrefsHelper(properties, prefs.checkboxes, result.checkboxes);
+  return result;
+}
+function getPrefsHelper(properties, prefsList, resultMap)
+{
+  len = prefsList.length;
+  for (var i=0; i<len; ++i)
+  {
+    var value = properties.getProperty(prefsList[i]);
+    if (value != null)
+    {
+      resultMap[prefsList[i]] = value;
+    }
+  }
+  return resultMap;
+}
 
+/**
+ * Save the user preferences, needs some rewriting.
+ */
 function savePrefs(properties, enableKey)
 {
   var scriptProperties = PropertiesService.getScriptProperties();
@@ -125,11 +160,11 @@ function savePrefs(properties, enableKey)
   * Terrible hack function to copy the "template" files
   * Will also save the file IDs
   */
-function makeDefaultFiles()
+function copyDefaultFiles()
 {
   var templatePurchaseSheetId = "1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4";
   var templateBlankPoId = "1ABemUrCoLAOrIYl-c0v2vDywPH2jqmDtAkpfuU0VdKw";
-  var templateFormId = "168qcipU4pT04LLsY_EQR_Z5iQhPWdBNeSZKRar7HQ6I";
+  var templateFormId = "106pVHeDXl-LHUKkr5brWyaBeZFKnasGwXArmUfkNv7Y";
   // Set up to access script properties
   var properties = PropertiesService.getScriptProperties();
   // Get our system's root folder
@@ -141,16 +176,16 @@ function makeDefaultFiles()
   PoSystemRoot = DriveApp.getFolderById(PoSystemRoot);
   
   // copySpreadsheet will return the file IDs
-  var purchaseSheetId = copySpreadsheet(templatePurchaseSheetId, "Purchase Master", PoSystemRoot).getId();
-  properties.setProperty('file-purchase-sheet', purchaseSheetId);
-  properties.setProperty('file-po-template', copySpreadsheet(templateBlankPoId, "PO Template", PoSystemRoot).getId());
+  //var purchaseSheetId = copySpreadsheet(templatePurchaseSheetId, "Purchase Master", PoSystemRoot).getId();
+  //properties.setProperty('file-purchase-sheet', purchaseSheetId);
+  //properties.setProperty('file-po-template', copySpreadsheet(templateBlankPoId, "PO Template", PoSystemRoot).getId());
   // Install the form trigger on the file ID
   //var purchaseSheetId = properties.getProperty('file-purchase-sheet');
-  installTrigger(purchaseSheetId);
+  //installTrigger(purchaseSheetId);
   // Copy the form template
   var form = FormApp.openById(templateFormId);
   var formData = DriveApp.getFileById(form.getId());
-  PoSystemRoot.createFile("Purchase Form", formData);
+  formData.makeCopy(formData.getName(), PoSystemRoot);
 }
 
 // Given the file ID of a template file, make a copy in the PO system root
@@ -186,14 +221,6 @@ function installTrigger(sheetId) {
 // See here for a description of object e https://developers.google.com/apps-script/guides/triggers/events#form-submit
 function purchaseForm(e)
 {
-  /*// Uncomment this to debug by running main without form trigger
-  
-   if (typeof e === "undefined") {
-     // e = {namedValues: {"Timestamp": ["Today"], "Email Address": ["esoroka@uci.edu"], "Vendor": ["Amazon"], "Vendor Website" : ["amazon.com"],"Lines 1 QTY": ["2"], "Line 1 Description" : ["Crappy hardware"], "Line 1 Item #": ["1234"], "Line 1 Price" : ["19.99"]}};
-     e = {values: ["Today", "cansatuci@gmail.com", "Download more RAM", "","downloadmoreram.com","Ground","Emiko", "3109196950","","4","GB", "Downloadable RAM","1234","9.99","yes","4","GB", "Extra shiny high-speed downloadable RAM","5678","19.99","no","","","","",""]};
-   }*/
-   
-  // newPO is the File object for the new PO
   var newPO = makeNewPO(e.values);
   addRecords(e.values);
   submitValuesToSlack(e, e.values[nameColumn] + ", your PO is at " + newPO.getUrl());

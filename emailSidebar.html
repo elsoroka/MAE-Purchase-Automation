@@ -4,37 +4,59 @@
   <div class="block"></div>
     <div class="block form-group">
       <div>
-        <label class="description" for="email-name">Email Sender Name </label>
+        <label class="description" for="email-name">Email Sender Name</label>
         <input id="email-name" name="email-name" class="element text medium" type="text" maxlength="255" value=""/> 
       </div>
       <div>
-        <label class="description" for="email-body">Email Body </label>
+        <label class="description" for="email-body">Email Body</label>
 		<textarea class="width-100" id="email-body" rows="6"></textarea> 
       </div>
       <input type="checkbox" id="email-include-link">
       <label for="email-include-link" value="true">Include Link to Sheets PO</label>
+      <div>
+        <label class="description" for="email-test-address">Send Test Email To</label>
+        <input id="email-test-address" name="email-test-address" class="element text medium" type="text" maxlength="255" value=""/> 
+      </div>
+      <div>
+        <label class="description" for="email-cc">Always CC</label>
+        <input id="email-cc" name="email-cc" class="element text medium" type="text" maxlength="255" value=""/> 
+      </div>
     </div>
     <div class="block" id="button-bar">
-      <button id="email-test">Test</button>
       <button id="email-save" onclick="emailSave()">Save</button>
+      <button id="email-test" onclick="emailTest()">Test</button>
     </div>
   </form>
 </div>
 
 <script>
-// AUGH a global variable
-var email_string_params = ["email-name", "email-body"];
+// AUGH a global variable, even worse it's duplicated in emailFiles.gs
+var email_string_params = ["email-name", "email-body", "email-cc"];
 /**
  * Try to load the email preferences if they exist
- * Assign click handlers to buttons
  */
 $(function()
 {
   google.script.run.withSuccessHandler(emailLoadPrefs)
     .withFailureHandler(showError).emailGetPrefs();
-  //$('#email-test').click(emailTest)
-  //$('#email-save').click(emailSave)
 });
+
+function emailTest()
+{
+  this.disabled = true;
+  var recipient = $('#email-test-address').val();
+  if (recipient == "")
+  {
+    showError("Please enter an address for the test message");
+  }
+  google.script.run.withSuccessHandler(function () {
+    showInfo("Sent test email to " + recipient + ".\nIt may take a few minutes.")
+    })
+    .withFailureHandler(function () {
+      showError("Couldn't send test email");
+      })
+    .sendTestEmail(recipient);
+}
 
 function emailLoadPrefs(emailPrefs)
 {

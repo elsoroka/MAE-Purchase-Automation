@@ -1,7 +1,14 @@
-// YOU NEED TO ENTER AN EMAIL ADDRESS AND THE ID OF A GOOGLE SHEETS FILE TO USE THIS TEST FUNCTION
-function emailTest()
+function sendTestEmail(recipient)
 {
-  emailPO("YOUR EMAIL ADDRESS HERE", DriveApp.getFileById("ID OF TEST FILE"));
+  var prefs = emailGetPrefs();
+  var options = {
+    name:prefs["email-name"],
+    cc:prefs["email-cc"],
+  };
+  MailApp.sendEmail(recipient,
+    "Test Email",
+    prefs["email-body"] + ((prefs["email-include-link"] == "true") ? "\nReal email will include PO link" : ""),
+    options);
 }
 
 function emailPO(recipient, spreadsheetFile)
@@ -21,28 +28,27 @@ function emailPO(recipient, spreadsheetFile)
   var options = {
     name:properties.getProperty('email-name'),
     attachments: [spreadsheetFile.getAs(MimeType.PDF)],
-  }
+  };
   MailApp.sendEmail(recipient,
     ssName,
     properties.getProperty('email-body') + (properties.getProperty('email-include-link') == "true") ? ssUrl : "",
     options);
 }
 
-var email_string_params = ["email-name", "email-body"];
-
+// AUGH a global variable, even worse it's duplicated in emailSidebar.html
+var email_string_params = ["email-name", "email-body", "email-cc", "email-include-link"];
 
 function emailGetPrefs()
 {
   var scriptProperties = PropertiesService.getScriptProperties();
-  var enabled = scriptProperties.getProperty('email-enable');
-  if (enabled == null)
-  {
-    throw('No email preferences saved!');
-  }
-  var props = {'email-enable':enabled};
+  var props = {'email-enable':scriptProperties.getProperty('email-enable')};
   for (var i=0; i<email_string_params.length; ++i)
   {
-    props[email_string_params[i]] = scriptProperties.getProperty(email_string_params[i]);
+    var propValue = scriptProperties.getProperty(email_string_params[i]);
+    if (propValue != null)
+    {
+      props[email_string_params[i]] = propValue;
+    }
   }
   return props;
 }

@@ -1,7 +1,8 @@
 
       <div id="slackSidebar" class="tabcontent" hidden>
       <form>
-      
+      <!--separator-->
+      <div class="block"></div>
         <div class="block form-group">
           <input type="checkbox" id="slack-enable">
           <label for="slack-enable" value="true">Enable Slack</label>
@@ -38,8 +39,8 @@
         </div>
         
         <div class="block" id="button-bar">
-          <button id="slack-test">Test</button>
-          <button id="slack-save">Save</button>
+          <button id="slack-test" onclick="slackTest()">Test</button>
+          <button id="slack-save" onclick="slackSave()">Save</button>
         </div>
 
       </form>
@@ -51,21 +52,18 @@
     // AUGH a global variable
     var slack_string_params = ["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"];
 
-    /**
-    * Reference:
-    * https://developers.google.com/gsuite/add-ons/editors/docs/quickstart/translate
-    */
-    
-      /**
-       * On document load, assign click handlers to each button and try to load the
-       * user's preferences if they exist
-       */
-      $(function() {
-        $('#slack-test').click(slackTest); // Test Slack settings
-        $('#slack-save').click(slackSave); // Save Slack settings
-        google.script.run.withSuccessHandler(slackLoadPrefs)
-            .withFailureHandler(showError).slackGetPrefs();
-      });
+  /**
+   * Reference:
+   * https://developers.google.com/gsuite/add-ons/editors/docs/quickstart/translate
+   */
+  /**
+   * On document load, try to load the user's preferences if they exist
+   */
+  $(function()
+  {
+    google.script.run.withSuccessHandler(slackLoadPrefs)
+      .withFailureHandler(showError).slackGetPrefs();
+  });
 
       /**
       * Make a test Slack post
@@ -78,12 +76,12 @@
         google.script.run
             .withSuccessHandler(
               function(msg, element) {
-                showInfo(msg, $('#button-bar'));
+                showInfo(msg);
                 element.disabled = false;
               })
             .withFailureHandler(
               function(msg, element) {
-                showError(msg, $('#button-bar'));
+                showError(msg);
                 element.disabled = false;
               })
             .withUserObject(this)
@@ -97,8 +95,6 @@
       function slackSave()
       {
         this.disabled = true;
-        $('#error').remove();
-        $('#info').remove();
         var slackPrefs = {'slack-enable':$('#slack-enable').is(':checked')};
         for (i=0; i<slack_string_params.length; ++i)
         {
@@ -107,16 +103,16 @@
         google.script.run
             .withSuccessHandler(
               function(msg, element) {
-                showInfo("Configuration saved!", $('#button-bar'));
+                showInfo("Slack configuration saved!");
                 element.disabled = false;
               })
             .withFailureHandler(
               function(msg, element) {
-                showError(msg, $('#button-bar'));
+                showError(msg);
                 element.disabled = false;
               })
             .withUserObject(this)
-            .slackSavePrefs(slackPrefs);
+            .savePrefs(slackPrefs, 'slack-enable');
       }
       
       function slackLoadPrefs(prefs) // the parameter to this is the object returned by slackGetPrefs()
@@ -129,7 +125,7 @@
         {
           $('#slack-enable').attr('checked', true);
         }
-        showInfo("Loaded preferences", "#button-bar");
+        showInfo("Loaded Slack preferences");
       }
 
     </script>

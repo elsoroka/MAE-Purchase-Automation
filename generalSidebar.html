@@ -1,4 +1,4 @@
-<div onLoad="loadSavedFileIds()" id="generalSidebar" class="tabcontent">
+<div id="generalSidebar" class="tabcontent">
    <!--separator-->
    <div class="block"></div>
   <div class="block">
@@ -30,7 +30,7 @@
     if (id != null)
        {
          link = "https://drive.google.com/drive/u/0/folders/" + id;?>
-         <a href="<?=link?>">Open Sheet</a>
+         <a href="<?=link?>">Open Folder</a>
        <?}?>
   </div>
 </div>
@@ -43,12 +43,12 @@
     google.script.run
     .withSuccessHandler(
       function(msg, element) {
-        showInfo(paramName, $('#button-bar'));
+        showInfo(paramName);
         element.disabled = false;
       })
     .withFailureHandler(
       function(msg, element) {
-        showError(msg, $('#button-bar'));
+        showError(msg);
         element.disabled = false;
       })
     .withUserObject(this)
@@ -61,7 +61,7 @@
     var id = properties.getProperty(name);
     if (id == null)
     {
-      showError("openById called on nonexistent script property " + name, $('#button-bar'));
+      showError("openById called on nonexistent script property " + name);
     }
   }
   

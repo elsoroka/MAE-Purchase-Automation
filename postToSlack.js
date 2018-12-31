@@ -26,20 +26,6 @@ var priceOffset = 4;
 // The same global variable as in sidebar.html, should fix that so it's only defined once
 var slack_string_params = ["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"];
 
-function slackSavePrefs(slackProperties)
-{
-  var scriptProperties = PropertiesService.getScriptProperties();
-  for (var key in slackProperties)
-  {
-    if (slackProperties[key] == undefined)
-    {
-      scriptProperties.setProperty('slack-enable',"false");
-      throw ("Property " + key + " has unset or invalid value " + slackProperties[key]);
-    }
-  }
-  scriptProperties.setProperties(slackProperties);
-}
-
 function slackGetPrefs()
 {
   var scriptProperties = PropertiesService.getScriptProperties();

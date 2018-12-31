@@ -1,0 +1,69 @@
+<div id="emailSidebar" class="tabcontent">
+  <form>
+  <!--separator-->
+  <div class="block"></div>
+    <div class="block form-group">
+      <div>
+        <label class="description" for="email-name">Email Sender Name </label>
+        <input id="email-name" name="email-name" class="element text medium" type="text" maxlength="255" value=""/> 
+      </div>
+      <div>
+        <label class="description" for="email-body">Email Body </label>
+		<textarea class="width-100" id="email-body" rows="6"></textarea> 
+      </div>
+      <input type="checkbox" id="email-include-link">
+      <label for="email-include-link" value="true">Include Link to Sheets PO</label>
+    </div>
+    <div class="block" id="button-bar">
+      <button id="email-test" onclick="emailTest()">Test</button>
+      <button id="email-save" onclick="emailSave()">Save</button>
+    </div>
+  </form>
+</div>
+
+<script>
+/**
+ * Try to load the email preferences if they exist
+ */
+$(function()
+{
+  google.script.run.withSuccessHandler(emailLoadPrefs)
+    .withFailureHandler(showError).emailGetPrefs();
+});
+
+var email_string_params = ["email-name", "email-body"];
+
+function emailLoadPrefs(emailPrefs)
+{
+  for (i=0; i<email_string_params.length; ++i)
+  {
+    $("#"+email_string_params[i]).val(emailPrefs[email_string_params[i]]);
+  }
+  if (emailPrefs['email-include-link']=="true") // horrible code
+  {
+    $('#email-include-link').attr('checked', true);
+  }
+  showInfo("Loaded email preferences", "#emailSidebar");
+}
+
+function emailSave()
+{
+  this.disabled = true;
+  var emailPrefs = {'email-include-link':$('#email-include-link').is(':checked')};
+  for (i=0; i<email_string_params.length; ++i)
+  {
+    emailPrefs[email_string_params[i]] = $("#"+email_string_params[i]).val();
+  }
+  google.script.run
+    .withSuccessHandler(
+      function(msg) {
+        showInfo("Email configuration saved!", $('#emailSidebar'));
+      })
+    .withFailureHandler(
+      function(msg) {
+        showError(msg, $('#button-bar'));
+      })
+    .withUserObject(this)
+    .savePrefs(emailPrefs, 'email-enable');
+}
+</script>

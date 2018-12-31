@@ -31,11 +31,17 @@ function onInstall(e) {
 
 function installDefaultPrefs()
 {
-  var defaults = {"slack-name":"New Purchase Order",
+  var defaults = {
+   "slack-enable":"true",
+   "slack-name":"New Purchase Order",
    "slack-icon":":money_with_wings:",
    "slack-color":"#0000DD",
    "slack-pretext":"A teammate submitted a new PO",
    "slack-fallback":"A teammate submitted a new PO",
+   "email-enable":"true",
+   "email-name":"PO System",
+   "email-body":"Your PO is attached",
+   "email-include-link":"false"
   }
   var scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.setProperties(defaults);
@@ -97,6 +103,20 @@ function getOAuthToken() {
 
 function saveParam(name, param)
 {
-  var properties = PropertiesService.getScriptProperties();
-  properties.setProperty(name, param);
+  PropertiesService.getScriptProperties().setProperty(name, param);
+}
+
+
+function savePrefs(properties, enableKey)
+{
+  var scriptProperties = PropertiesService.getScriptProperties();
+  for (var key in properties)
+  {
+    if (properties[key] == undefined)
+    {
+      scriptProperties.setProperty(enableKey,"false");
+      throw ("Property " + key + " has unset or invalid value " + properties[key]);
+    }
+  }
+  scriptProperties.setProperties(properties);
 }

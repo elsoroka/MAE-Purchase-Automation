@@ -1,5 +1,5 @@
 
-      <div id="slackSidebar" class="tabcontent" hidden>
+      <div id="slackSidebar" class="tabcontent">
       <form>
       <!--separator-->
       <div class="block"></div>
@@ -39,8 +39,8 @@
         </div>
         
         <div class="block" id="button-bar">
-          <button id="slack-test" onclick="slackTest()">Test</button>
-          <button id="slack-save" onclick="slackSave()">Save</button>
+          <button id="slack-test" >Test</button>
+          <button id="slack-save" >Save</button>
         </div>
 
       </form>
@@ -61,6 +61,8 @@
    */
   $(function()
   {
+    $('#slack-test').click(slackTest)
+    $('#slack-save').click(slackSave)
     google.script.run.withSuccessHandler(slackLoadPrefs)
       .withFailureHandler(showError).slackGetPrefs();
   });

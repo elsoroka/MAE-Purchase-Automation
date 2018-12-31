@@ -1,5 +1,5 @@
 // YOU NEED TO ENTER AN EMAIL ADDRESS AND THE ID OF A GOOGLE SHEETS FILE TO USE THIS TEST FUNCTION
-function test()
+function emailTest()
 {
   emailPO("YOUR EMAIL ADDRESS HERE", DriveApp.getFileById("ID OF TEST FILE"));
 }

@@ -1,5 +1,5 @@
 <div id="emailSidebar" class="tabcontent">
-  <form>
+  <form onsubmit="return(false)">
   <!--separator-->
   <div class="block"></div>
     <div class="block form-group">
@@ -15,23 +15,26 @@
       <label for="email-include-link" value="true">Include Link to Sheets PO</label>
     </div>
     <div class="block" id="button-bar">
-      <button id="email-test" onclick="emailTest()">Test</button>
+      <button id="email-test">Test</button>
       <button id="email-save" onclick="emailSave()">Save</button>
     </div>
   </form>
 </div>
 
 <script>
+// AUGH a global variable
+var email_string_params = ["email-name", "email-body"];
 /**
  * Try to load the email preferences if they exist
+ * Assign click handlers to buttons
  */
 $(function()
 {
   google.script.run.withSuccessHandler(emailLoadPrefs)
     .withFailureHandler(showError).emailGetPrefs();
+  //$('#email-test').click(emailTest)
+  //$('#email-save').click(emailSave)
 });
-
-var email_string_params = ["email-name", "email-body"];
 
 function emailLoadPrefs(emailPrefs)
 {
@@ -56,12 +59,14 @@ function emailSave()
   }
   google.script.run
     .withSuccessHandler(
-      function(msg) {
-        showInfo("Email configuration saved!", $('#emailSidebar'));
+        function(msg, element) {
+        showInfo("Email configuration saved!");
+        element.disabled = false;
       })
     .withFailureHandler(
-      function(msg) {
-        showError(msg, $('#button-bar'));
+      function(msg, element) {
+        showError("Couldn't save email configuration");
+        element.disabled = false;
       })
     .withUserObject(this)
     .savePrefs(emailPrefs, 'email-enable');

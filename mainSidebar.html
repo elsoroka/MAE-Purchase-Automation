@@ -71,7 +71,43 @@ function loadTab(name)
   document.getElementById(name).style.display = "block";
 }
 
-      
+/** Expects: the prefs object with list of strings and list of checkboxes
+ * returned by getPrefs()
+ */
+function loadPrefs(prefs)
+{
+  for (var key in prefs.strings)
+  {
+    $("#"+key).val(prefs.strings[key]);
+  }
+  for (var key in prefs.checkboxes)
+  {
+    $('#'+key).attr('checked', (prefs.checkboxes[key]=="true"));
+  }
+}
+
+/** Expects: the prefs object with list of strings and list of checkboxes
+ * returned by getPrefs(). Saves this to the properties service.
+ */
+function savePrefs(propKeys)
+{
+  this.disabled = true;
+  var props = {strings:{}, checkboxes:{}};
+  var msg = "\n";
+  for (var i=0; i<propKeys.strings.length; ++i) // retrieve values from textfields
+  {
+    props.strings[propKeys.strings[i]] = $("#"+propKeys.strings[i]).val();
+    msg += " " + propKeys.strings[i] + " ";
+  }
+  for (var i=0; i<propKeys.checkboxes.length; ++i) // retrieve values from checkboxes
+  {
+    props.checkboxes[propKeys.checkboxes[i]] = $('#'+propKeys.checkboxes[i]).is(':checked');
+    msg += " " + propKeys.checkboxes[i] + " ";
+  }
+  google.script.run.saveProps(props);
+  showInfo("Saved configuration" + msg);
+}
+
 /**
  * Displays an error or info message in the message div
  *

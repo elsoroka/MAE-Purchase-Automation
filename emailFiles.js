@@ -34,21 +34,3 @@ function emailPO(recipient, spreadsheetFile)
     properties.getProperty('email-body') + (properties.getProperty('email-include-link') == "true") ? ssUrl : "",
     options);
 }
-
-// AUGH a global variable, even worse it's duplicated in emailSidebar.html
-var email_string_params = ["email-name", "email-body", "email-cc", "email-include-link"];
-
-function emailGetPrefs()
-{
-  var scriptProperties = PropertiesService.getScriptProperties();
-  var props = {'email-enable':scriptProperties.getProperty('email-enable')};
-  for (var i=0; i<email_string_params.length; ++i)
-  {
-    var propValue = scriptProperties.getProperty(email_string_params[i]);
-    if (propValue != null)
-    {
-      props[email_string_params[i]] = propValue;
-    }
-  }
-  return props;
-}

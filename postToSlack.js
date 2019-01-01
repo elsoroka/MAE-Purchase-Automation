@@ -23,20 +23,6 @@ var priceOffset = 4;
 // End customization //
 ///////////////////////
 
-// The same global variable as in sidebar.html, should fix that so it's only defined once
-var slack_string_params = ["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"];
-
-function slackGetPrefs()
-{
-  var scriptProperties = PropertiesService.getScriptProperties();
-  var props = {'slack-enable':scriptProperties.getProperty('slack-enable')};
-  for (var i=0; i<slack_string_params.length; ++i)
-  {
-    props[slack_string_params[i]] = scriptProperties.getProperty(slack_string_params[i]);
-  }
-  return props;
-}
-
 function slackTestPost(url, channel, name, icon, text)
 {
   var payload = {

@@ -33,31 +33,16 @@
 /**
  * Try to load the email preferences if they exist
  */
-$(function()
-{
-  var fileProps = {
+var filePropKeys = {
     strings:["po-start-status", "po-statuses"],
     checkboxes:[]
     };
-  google.script.run.withSuccessHandler(loadFilePrefs)
-    .withFailureHandler(showError).getPrefs(fileProps);
-});
-
-/** Expects: the prefs object with list of strings and list of checkboxes
- * returned by getPrefs()
- */
-function loadFilePrefs(prefs)
+$(function()
 {
-  for (var key in prefs.strings)
-  {
-    $("#"+key).val(prefs.strings[key]);
-  }
-  for (var key in prefs.checkboxes)
-  {
-    $('#'+key).attr('checked', (prefs.checkboxes[key]=="true"));
-  }
-  showInfo("Loaded file prefs");
-}
+  google.script.run.withSuccessHandler(loadFilePrefs)
+    .withFailureHandler(showError).getPrefs(filePropKeys);
+    showInfo("Loaded preferences");
+});
 
 function runSetUp(name)
 {

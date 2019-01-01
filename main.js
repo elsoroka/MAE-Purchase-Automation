@@ -139,21 +139,11 @@ function getPrefsHelper(properties, prefsList, resultMap)
   return resultMap;
 }
 
-/**
- * Save the user preferences, needs some rewriting.
- */
-function savePrefs(properties, enableKey)
+function saveProps(props)
 {
-  var scriptProperties = PropertiesService.getScriptProperties();
-  for (var key in properties)
-  {
-    if (properties[key] == undefined)
-    {
-      scriptProperties.setProperty(enableKey,"false");
-      throw ("Property " + key + " has unset or invalid value " + properties[key]);
-    }
-  }
-  scriptProperties.setProperties(properties);
+  var properties = PropertiesService.getScriptProperties();
+  properties.setProperties(props.strings);
+  properties.setProperties(props.checkboxes);
 }
 
 /**

@@ -1,6 +1,5 @@
-
       <div id="slackSidebar" class="tabcontent">
-      <form>
+      <form onsubmit="return(false)">
       <!--separator-->
       <div class="block"></div>
         <div class="block form-group">
@@ -39,33 +38,33 @@
         </div>
         
         <div class="block" id="button-bar">
-          <button id="slack-test" >Test</button>
-          <button id="slack-save" >Save</button>
+          <button id="slack-save" onclick="savePrefs(slackPropKeys)" >Save</button>
+          <button id="slack-test" onclick="slackTest()">Test</button>
         </div>
 
       </form>
       </div>
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
     
-    // AUGH a global variable
-    var slack_string_params = ["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"];
-
-  /**
-   * Reference:
-   * https://developers.google.com/gsuite/add-ons/editors/docs/quickstart/translate
-   */
-  /**
-   * On document load, try to load the user's preferences if they exist
-   */
-  $(function()
-  {
-    $('#slack-test').click(slackTest)
-    $('#slack-save').click(slackSave)
-    google.script.run.withSuccessHandler(slackLoadPrefs)
-      .withFailureHandler(showError).slackGetPrefs();
-  });
+// AUGH a global variable
+var slackPropKeys = {
+  strings:["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"],
+  checkboxes:["slack-enable"],
+  };
+/**
+ * Reference:
+ * https://developers.google.com/gsuite/add-ons/editors/docs/quickstart/translate
+ */
+/**
+ * On document load, try to load the user's preferences if they exist
+ */
+$(function()
+{
+  google.script.run.withSuccessHandler(loadPrefs)
+    .withFailureHandler(showError).getPrefs(slackPropKeys);
+});
 
       /**
       * Make a test Slack post
@@ -93,40 +92,5 @@
               $('#slack-icon').val(),
               "PO 2.0 test message");
       }
-      
-      function slackSave()
-      {
-        this.disabled = true;
-        var slackPrefs = {'slack-enable':$('#slack-enable').is(':checked')};
-        for (i=0; i<slack_string_params.length; ++i)
-        {
-          slackPrefs[slack_string_params[i]] = $("#"+slack_string_params[i]).val();
-        }
-        google.script.run
-            .withSuccessHandler(
-              function(msg, element) {
-                showInfo("Slack configuration saved!");
-                element.disabled = false;
-              })
-            .withFailureHandler(
-              function(msg, element) {
-                showError(msg);
-                element.disabled = false;
-              })
-            .withUserObject(this)
-            .savePrefs(slackPrefs, 'slack-enable');
-      }
-      
-      function slackLoadPrefs(prefs) // the parameter to this is the object returned by slackGetPrefs()
-      {
-        for (i=0; i<slack_string_params.length; ++i)
-        {
-          $("#"+slack_string_params[i]).val(prefs[slack_string_params[i]]);
-        }
-        if (prefs['slack-enable']=="true") // horrible code
-        {
-          $('#slack-enable').attr('checked', true);
-        }
-      }
 
-    </script>
+</script>

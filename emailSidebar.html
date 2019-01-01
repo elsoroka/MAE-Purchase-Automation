@@ -23,28 +23,25 @@
       </div>
     </div>
     <div class="block" id="button-bar">
-      <button id="email-save" onclick="emailSave()">Save</button>
+      <button id="email-save" onclick="savePrefs(emailPropKeys)">Save</button>
       <button id="email-test" onclick="emailTest()">Test</button>
     </div>
   </form>
 </div>
 
 <script>
-// AUGH a global variable, even worse it's duplicated in emailFiles.gs
-var email_string_params = ["email-name", "email-body", "email-cc"];
+// AUGH a global variable
+var emailPropKeys = {
+  strings:["email-name", "email-body", "email-cc"],
+  checkboxes:["email-include-link"],
+  };
 /**
  * Try to load the file preferences if they exist
  */
 $(function()
 {
-  var fileProps = {
-    strings:["po-start-status", "po-statuses"],
-    checkboxes:[]
-    };
-  google.script.run.withSuccessHandler(loadFilePrefs)
-    .withFailureHandler(showError).getPrefs(fileProps);
-  google.script.run.withSuccessHandler(emailLoadPrefs)
-    .withFailureHandler(showError).emailGetPrefs();
+  google.script.run.withSuccessHandler(loadPrefs)
+    .withFailureHandler(showError).getPrefs(emailPropKeys);
 });
 
 function emailTest()
@@ -76,26 +73,4 @@ function emailLoadPrefs(emailPrefs)
   }
 }
 
-function emailSave()
-{
-  this.disabled = true;
-  var emailPrefs = {'email-include-link':$('#email-include-link').is(':checked')};
-  for (i=0; i<email_string_params.length; ++i)
-  {
-    emailPrefs[email_string_params[i]] = $("#"+email_string_params[i]).val();
-  }
-  google.script.run
-    .withSuccessHandler(
-        function(msg, element) {
-        showInfo("Email configuration saved!");
-        element.disabled = false;
-      })
-    .withFailureHandler(
-      function(msg, element) {
-        showError("Couldn't save email configuration");
-        element.disabled = false;
-      })
-    .withUserObject(this)
-    .savePrefs(emailPrefs, 'email-enable');
-}
 </script>

@@ -13,8 +13,8 @@
     </div>
     <?} // END "NEW INSTALLATION" BLOCK ?>
    <p> Fill out the parameters below and click "Build Purchase Tracker".
-   You will need a Google Sheets file representing a blank purchase order. MAE projects may obtain the file
-   <a href="https://docs.google.com/spreadsheets/d/1JwkjrOoqqr90rCP3AxT5QVSTaxD0cHbC0vtgOLPkmuU/">here</a> (File->Make a copy").
+   You will need a Google Sheets file representing a blank purchase order. MAE projects may copy the file
+   <a href="https://docs.google.com/spreadsheets/d/1JwkjrOoqqr90rCP3AxT5QVSTaxD0cHbC0vtgOLPkmuU/">here</a>.
    </p>
    <div class="block">
       <label class="description" for="po-statuses">Purchase Statuses (comma-separated) </label>
@@ -25,6 +25,22 @@
    </div>
    <div>
      <button id="create-purchase-sheet" onclick="runMakePoMaster()">Create Purchase Sheet</button>
+   </div>
+   <!--Section controlling form generation-->
+   <div class="block">
+     <p>This section controls generation of a purchase order form.</p>
+     <label class="description" for="po-line-items">Number of Line Items</label>
+     Check how many lines appear on your department's PO form.
+     <input id="po-line-items" name="po-line-items" class="element text medium" type="text" maxlength="255" value="12"/>
+     The following information will be requested in the form:<br>
+     Vendor, Vendor Contact Phone, Website, Shipping, Requestor Name, Requestor Phone, Special Instructions.<br>
+     The following information will be requested for each line item:<br>
+     Quantity, Unit of Measure, Description, Item #, Price.
+     <p>If your form requires additional information, please add it manually after generating the file.</p>
+     <p>You need to set up the CurrentPO sheet so information populates in the correct places.<br>
+     To make this easy, we generated some named ranges corresponding to the relevant fields. (You can also define your own!)<br>
+     For example, to display the current PO vendor name in a cell, enter the formula <code>=INDIRECT(vendorName)</code><br>
+     A list of all named fields will appear in the sheet.</p>
    </div>
    </form>
 </div>

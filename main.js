@@ -195,14 +195,15 @@ function copySpreadsheet(templateId, newName, destination)
   return ssCopy;
 }
 
-// In the Script Editor, run initialize() at least once to make your code execute on form submit
-function installTrigger(sheetId) {
+// In the Script Editor, run installTrigger() at least once to make your code execute on form submit
+// ss should be an open spreadsheet object
+function installTrigger(ss) {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i in triggers) {
     ScriptApp.deleteTrigger(triggers[i]);
   }
   ScriptApp.newTrigger("purchaseForm")
-    .forSpreadsheet(SpreadsheetApp.openById(sheetId))
+    .forSpreadsheet(ss)
     .onFormSubmit()
     .create();
 }

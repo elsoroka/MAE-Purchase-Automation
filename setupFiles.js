@@ -1,18 +1,38 @@
-// The input params to makePoMasterSheet should be an object containing
-// string name: name to create the spreadsheet under
-// [string] statuses: list of purchase statuses
-// string startStatus: the status new POs start with
-// fileId poTemplateId: a blank PO spreadsheet.
-// integer nLineItems: the number of line items to support
+/** The input params to setupEverything, makePoMasterSheet, etc. should be an object containing
+ * string name: name to create the spreadsheet under
+ * [string] statuses: list of purchase statuses
+ * string startStatus: the status new POs start with
+ * fileId poTemplateId: a blank PO spreadsheet.
+ * integer nLineItems: the number of line items to support
+ */
+ 
+function setupEverything(params)
+{
+  var poMaster = makePoMasterSheet(params);
+  var poForm = makePoForm(params, poMaster.getId());
+  // Install the "on form submit" trigger for poMaster
+  installTrigger(poMaster);
+  // MUST change this to document properties for multi-user operation!!
+  //  SpreadsheetApp.setActiveSpreadsheet(poMaster);
+  // Install default params on the new poMaster spreadsheet
+  // Save the new properties
+  PropertiesService.getScriptProperties().setProperties({
+    "po-start-status":params.startStatus,
+    "po-statuses":params.statuses,
+    "file-purchase-sheet":poMaster.getId(),
+    "file-po-template":params.poTemplateId,
+    });
+}
+
+/**
+ * For a description of params, see setupEverything comments.
+ */
 function makePoMasterSheet(params)
 {
   // Create the sheet; unfortunately it ends up in the user's root folder and we need to move it
   var poMaster = SpreadsheetApp.create(params.name);
   // Move the file to the right folder
-  var userRoot = DriveApp.getRootFolder();
-  poMasterFile = DriveApp.getFileById(poMaster.getId()); // File object instead of spreadsheet object
-  DriveApp.getFolderById(params.folder).addFile(poMasterFile);
-  userRoot.removeFile(poMasterFile);
+  moveFromRootToFolder(poMaster.getId(), params.folder);
   
   // Build up the PO stuff - WORKING
   SpreadsheetApp.setActiveSpreadsheet(poMaster)
@@ -23,14 +43,6 @@ function makePoMasterSheet(params)
   setupParams(poMaster, poMaster.insertSheet("Params", 2), params.nLineItems); // working
   copyTemplateToMaster(params.poTemplateId, poMaster, "CurrentPO"); // working
   
-  // MUST change this to document properties for multi-user operation!!
-  // Save the new properties
-  PropertiesService.getScriptProperties().setProperties({
-    "po-start-status":params.startStatus,
-    "po-statuses":params.statuses,
-    "file-purchase-sheet":poMaster.getId(),
-    "file-po-template":params.poTemplateId,
-    });
   return poMaster;
 }
 
@@ -44,7 +56,8 @@ function testMakeSheet()
     poTemplateId:"1xiMY3cm6O7rEUCZfH7XZNpuOdsu6NjPzm6xfzdOkVLQ",
     nLineItems:12,
     };
-    makePoMasterSheet(params);
+    //makePoMasterSheet(params);
+    makePoForm(params, "1gYe1xA7iR73e1ys6vzsY5MjAdt_8n0S4ZJTrzxdt5z8");
 }
 
 function setupRecords(sheet, statuses)
@@ -161,5 +174,92 @@ function installSingleCellNamedRanges(ss, sheet, cells, startCell)
   for (var i=0; i<len; ++i)
   {
     ss.setNamedRange(cells[i][0], startCell.offset(i,1));
+  }
+}
+
+function moveFromRootToFolder(fileId, destinationId)
+{
+  var userRoot = DriveApp.getRootFolder();
+  var file = DriveApp.getFileById(fileId); // File object instead of spreadsheet object
+  DriveApp.getFolderById(destinationId).addFile(file);
+  userRoot.removeFile(file);
+}
+
+/*        PROGRAMMATIC FORM GENERATION         */
+/**
+ * Programatically create the PO form with given # of line items params.nLineItems in params.folder
+ * Link it to the spreadsheet at ID linkToId
+ */
+function makePoForm(params, linkToId)
+{
+  var poForm = FormApp.create("New Purchase Order");
+  moveFromRootToFolder(poForm.getId(), params.folder);
+  poForm.addSectionHeaderItem().setTitle("New Purchase Order");
+  
+  // Define the text items, and whether they are required (true) or optional.
+  var requireNumber = FormApp.createTextValidation().requireNumber().build();
+  var textItems = [
+    {title:"Your Name", required:true, validation:null, help:""},
+    {title:"Your Phone", required:true, validation:requireNumber, help:""},
+    {title:"Vendor", required:true, validation:null, help:"You must prepare one PO for each vendor."},
+    {title:"Vendor's Phone", required:false, validation:requireNumber, help:"Not all vendors have phone numbers."},
+    {title:"Website", required:true, validation:null, help:""},
+    {title:"Special Instructions", required:false, validation:null, help:"Coupon codes, shipping instructions, or other notes"},
+    ];
+  addTextItemsHelper(poForm, textItems, false);
+  
+  // Add the multiple-choice shipping selector
+  poForm.addMultipleChoiceItem().setTitle("Shipping")
+    .setChoiceValues(["Ground", "2-Day", "3-Day", "Overnight"])
+    .showOtherOption(true)
+    .setHelpText("If you select Other, enter a date.");
+    
+  // Set up the N line items
+  var lineHelpText = "For each line item, you need Quantity, Description, Item # and Price. Unit of Measure is optional.\n\
+  You may enter up to " + params.nLineItems + " items.";
+  var lineTextItems = [
+    {title:" Quantity", required:true, validation:requireNumber, help:""},
+    {title:" Unit of Measure", required:false, validation:null, help:"Unit the quantity is measured in; for example yards or pounds"},
+    {title:" Description", required:true, validation:null, help:"Descriptive name of the item. \
+If you need to choose a color, finish, or other parameter, do it here."},
+    {title:" Item #", required:true, validation:null, help:"When searched on the supplier's website, this should bring up the item. \
+For Amazon orders, this is the ASIN number on the item page."},
+    {title:" Price", required:true, validation:requireNumber, help:""},
+    ]; 
+  
+  // Generate the line item sections
+  for (var i=1; i<=params.nLineItems; ++i)
+  {
+    poForm.addPageBreakItem().setTitle("Line " + i).setHelpText(lineHelpText);
+    addTextItemsHelper(poForm, lineTextItems, true); // CHANGE to TRUE
+    if (i != params.nLineItems) // Do not add this to the last line
+    {
+      var switchItem = poForm.addMultipleChoiceItem().setTitle("Add another line?");
+      switchItem.setChoices([
+        switchItem.createChoice("Yes", FormApp.PageNavigationType.CONTINUE),
+        switchItem.createChoice("No", FormApp.PageNavigationType.SUBMIT),
+        ]);
+    }
+  }
+  // Now we have the beginning section and N line items. Make sure the settings are correct and link it to the sheet
+  poForm.setCollectEmail(true)
+    .setLimitOneResponsePerUser(false)
+    .setDestination(FormApp.DestinationType.SPREADSHEET, linkToId);
+  return poForm;
+}
+
+function addTextItemsHelper(form, textItems, enumerate)
+{
+  var len = textItems.length;
+  for (var i=0; i<len; ++i)
+  {
+    var item = form.addTextItem()
+      .setTitle((enumerate) ? "Line "+i+textItems[i].title : textItems[i].title) // Optionally enumerate items
+      .setRequired(textItems[i].required)
+      .setHelpText(textItems[i].help);
+    if (textItems[i].validation != null)
+    {
+      item.setValidation(textItems[i].validation);
+    }
   }
 }

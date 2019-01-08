@@ -9,8 +9,8 @@ You may customize these files after they are created.</p>
    <div class="block"></div>
      <div class="block">
       <p>Select a "home" folder for your purchase system to live in, then continue below.</p>
-      <button id="folder-root" onclick="openPickerWindow('folder-root', 'f')">Select Home Folder</button>
-      <div id="folder-root-data">
+      <button id="folder-root-button" onclick="openSetupPicker('folder-root', 'f')">Select Home Folder</button>
+      <div id="folder-root">
       </div>
     </div>
    <p>Select a template blank purchase order. MAE projects may copy
@@ -21,8 +21,8 @@ You may customize these files after they are created.</p>
 	  <textarea class="width-100" id="po-statuses" rows="2">In Progress,Complete,Canceled,Submitted</textarea> 
       <label class="description" for="po-start-status">New POs Start In Status </label>
       <input id="po-start-status" name="po-start-status" class="element text medium" type="text" maxlength="255" value="In Progress"/> 
-      <button id="file-po-template" onclick="openPickerWindow('file-po-template', 's')">Select PO Template</button>
-      Selected file ID: <div id="file-po-template-data">
+      <button id="file-po-template-button" onclick="openSetupPicker('file-po-template', 's')">Select PO Template</button>
+      Selected file ID: <div id="file-po-template">
       </div>
    </div>
    <!--Section controlling form generation-->
@@ -49,20 +49,6 @@ You may customize these files after they are created.</p>
 
 <script>
 /**
- * Try to load the email preferences if they exist
- */
-var filePropKeys = {
-    strings:["po-start-status", "po-statuses"],
-    checkboxes:[]
-    };
-$(function()
-{
-  google.script.run.withSuccessHandler(loadFilePrefs)
-    .withFailureHandler(showError).getPrefs(filePropKeys);
-    showInfo("Loaded preferences");
-});
-
-/**
  * Implements incremental update of a text field as the long PO form is being generated
  * For some reason this is not working.
  */
@@ -72,6 +58,25 @@ function progressCallback(msg)
   info.innerHTML += msg; // APPEND
 }
 
+  function openSetupPicker(paramName, type)
+  {
+    this.disabled = true;
+    showInfo("test");
+    google.script.run
+    .withSuccessHandler(
+      function(msg, element) {
+        showInfo("Opening picker window");
+        element.disabled = false;
+      })
+    .withFailureHandler(
+      function(msg, element) {
+        showError(msg);
+        element.disabled = false;
+      })
+    .withUserObject(this)
+    .showPicker(paramName, type, true);
+  }
+  
 function setupPickerCallback(name, id)
 {
   document.getElementById(name).innerHTML = id;

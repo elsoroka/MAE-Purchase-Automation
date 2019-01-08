@@ -81,11 +81,12 @@ function includeTemplate(filename) {
  * Displays an HTML-service dialog in Google Sheets that contains client-side
  * JavaScript code for the Google Picker API.
  */
-function showPicker(name, type)
+function showPicker(name, type, isSetupMode)
 {
   var html = HtmlService.createTemplateFromFile('pickerDialog');
   html.paramName = name;
   html.pickerType = type;
+  html.isSetupMode = isSetupMode;
   html = html.evaluate()
       .setWidth(600)
       .setHeight(425)

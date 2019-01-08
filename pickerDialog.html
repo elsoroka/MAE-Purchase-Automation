@@ -5,6 +5,7 @@
     var DEVELOPER_KEY = ''; // hmm this doesn't seem safe
     var DIALOG_DIMENSIONS = {width: 600, height: 425};
     var pickerApiLoaded = false;
+    var savetype = "a";
     
     /**
      * Loads the Google Picker API.
@@ -43,6 +44,7 @@
         // Recover whether the picker should be for a spreadsheet or folder
         var type = document.getElementById('type').innerHTML;
         var viewType = google.picker.ViewId.SPREADSHEETS;
+        savetype = document.getElementById('name').innerHTML; // beware of the global variable
         if (type == 'f') // file
         {
           viewType = new google.picker.DocsView()
@@ -86,7 +88,7 @@
       if (action == google.picker.Action.PICKED)
       {
         var id = data.docs[0].id;
-        google.script.run.saveParam(document.getElementById('name').innerHTML, id);
+        google.script.run.saveParam(savetype, id); // beware of global variable
         google.script.host.close();
       }
       else if (action == google.picker.Action.CANCEL)

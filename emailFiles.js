@@ -14,7 +14,7 @@ function sendTestEmail(recipient)
 function emailPO(recipient, spreadsheetFile)
 {
   // Load settings
-  var properties = PropertiesService.getScriptProperties();
+  var properties = PropertiesService.getDocumentProperties();
   var ssName = spreadsheetFile.getName();
   var ssUrl = spreadsheetFile.getUrl();
   // Check that we're able to send an email

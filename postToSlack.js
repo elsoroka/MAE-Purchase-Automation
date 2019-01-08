@@ -9,8 +9,8 @@
 
 var lineStartColumn = 9; // Zero-indexed column where the line items begin (depends on purchasing sheet format)
 var emailColumn = 1; // Zero-indexed column where the submitter's email address is (depends on purchasing sheet format)
-var vendorColumn = 2; // Zero-indexed column where the PO vendor is (depends on purchasing sheet format)
-var nameColumn = 6; // Zero-indexed position of submitter name (depends on purchasing sheet format)
+var vendorColumn = 4; // Zero-indexed column where the PO vendor is (depends on purchasing sheet format)
+var nameColumn = 2; // Zero-indexed position of submitter name (depends on purchasing sheet format)
 var lineItemColumns = 6; // Number of columns associated with each line item (depends on sheet format)
 // Describe the position of each relevant field (quantity, units of measure, item description, item # and price) in a "line item"
 var qtyOffset = 0; // position of Quantity in per-line columns
@@ -42,45 +42,33 @@ function slackTestPost(url, channel, name, icon, text)
 }
 
 // See here for a description of object e https://developers.google.com/apps-script/guides/triggers/events#form-submit
-function submitValuesToSlack(e, message) {
-  // Test code. uncomment to debug in Google Script editor
-   if (typeof e === "undefined") {
-     // e = {namedValues: {"Timestamp": ["Today"], "Email Address": ["esoroka@uci.edu"], "Vendor": ["Amazon"], "Vendor Website" : ["amazon.com"],"Lines 1 QTY": ["2"], "Line 1 Description" : ["Crappy hardware"], "Line 1 Item #": ["1234"], "Line 1 Price" : ["19.99"]}};
-     e = {values: ["Today", "esoroka@uci.edu", "Download more RAM", "","downloadmoreram.com","Ground","Emiko", "3109196950","","4","GB", "Downloadable RAM","1234","9.99","yes","4","GB", "Extra shiny high-speed downloadable RAM","5678","19.99","no","","","","",""]};
-   }
-  if (typeof message === undefined)
-  {
-    message = messagePretext;
-  }
-  
-  var scriptProperties = PropertiesService.getScriptProperties();
-  if (scriptProperties.getProperty('slack-enable') == "false")
+function submitValuesToSlack(e, message)
+{
+  var properties = PropertiesService.getDocumentProperties();
+  if (properties.getProperty('slack-enable') == "false")
   {
     return;
   }
-
-  var attachments = constructAttachments(e.values, message);
-  
+  var attachments = constructAttachments(e.values, message, properties);
   var payload = {
-    "channel": scriptProperties.getProperty('slack-channel'),
-    "username": scriptProperties.getProperty('slack-name'),
-    "icon_emoji": scriptProperties.getProperty('slack-icon'),
+    "channel": properties.getProperty('slack-channel'),
+    "username": properties.getProperty('slack-name'),
+    "icon_emoji": properties.getProperty('slack-icon'),
     "link_names": 1,
     "attachments": attachments
   };
-
   var options = {
     'method': 'post',
     'payload': JSON.stringify(payload)
   };
   // Send the Slack message
-  var response = UrlFetchApp.fetch(scriptProperties.getProperty('slack-webhook'), options);
+  var response = UrlFetchApp.fetch(properties.getProperty('slack-webhook'), options);
 }
 
 // Creates Slack message attachments which contain the data from the Google Form
 // submission, which is passed in as a parameter
 // https://api.slack.com/docs/message-attachments
-var constructAttachments = function(values, message) {
+var constructAttachments = function(values, message, properties) {
   //var fields = makeFields(values);
   var text = makeText(values);
   Logger.log(text);
@@ -88,13 +76,11 @@ var constructAttachments = function(values, message) {
   {
     Logger.log(values[i]);
   }
-  
-  var scriptProperties = PropertiesService.getScriptProperties();
   var attachments = [{
-    "fallback" : scriptProperties.getProperty('slack-fallback'),
+    "fallback" : properties.getProperty('slack-fallback'),
     "pretext" : message,
-    "mrkdwn_in" : [scriptProperties.getProperty('slack-pretext')],
-    "color" : scriptProperties.getProperty('slack-color'),
+    "mrkdwn_in" : [properties.getProperty('slack-pretext')],
+    "color" : properties.getProperty('slack-color'),
     "text"  : text
     //"fields" : fields
   }]
@@ -182,5 +168,5 @@ function sendPlainMessage(message)
     'payload': JSON.stringify(payload)
   };
   // Send the Slack message
-  var response = UrlFetchApp.fetch(slackIncomingWebhookUrl, options);
+  var response = UrlFetchApp.fetch(PropertiesService.getDocumentProperties().getProperty('slack-webhook'), options);
 }

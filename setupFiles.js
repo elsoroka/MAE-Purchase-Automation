@@ -5,23 +5,26 @@
  * fileId poTemplateId: a blank PO spreadsheet.
  * integer nLineItems: the number of line items to support
  */
- 
-function setupEverything(params)
+function setupEverything(params, progressCallback)
 {
-  var poMaster = makePoMasterSheet(params);
-  var poForm = makePoForm(params, poMaster.getId());
+  //var poMaster = makePoMasterSheet(params);
+  var poMaster = SpreadsheetApp.openById("1gYe1xA7iR73e1ys6vzsY5MjAdt_8n0S4ZJTrzxdt5z8");
+  progressCallback("Created Purchase Order sheet: <a href='"+poMaster.getUrl()+"'>Open</a><br>");
+ // var poForm = makePoForm(params, poMaster.getId());
+  progressCallback("Created New Purchase Order form: <a href='"+poForm.getUrl()+"'>Open</a><br>");
   // Install the "on form submit" trigger for poMaster
-  installTrigger(poMaster);
-  // MUST change this to document properties for multi-user operation!!
-  //  SpreadsheetApp.setActiveSpreadsheet(poMaster);
+ // installTrigger(poMaster);
   // Install default params on the new poMaster spreadsheet
+  installDefaultPrefs(poMaster);
   // Save the new properties
-  PropertiesService.getScriptProperties().setProperties({
+  PropertiesService.getDocumentProperties().setProperties({
     "po-start-status":params.startStatus,
-    "po-statuses":params.statuses,
     "file-purchase-sheet":poMaster.getId(),
     "file-po-template":params.poTemplateId,
+    "folder-root":params.folder,
     });
+  progressCallback("Installed 'on form submit' trigger and saved configuration.<br>");
+  return poMaster;
 }
 
 /**
@@ -46,20 +49,6 @@ function makePoMasterSheet(params)
   return poMaster;
 }
 
-function testMakeSheet()
-{
-  var params = {
-    name:"PO Master Fulltest",
-    folder:"1lyeocV7wwwygnJqdJnu3v2pjPxuDzWZm",
-    statuses:["In Progress", "Canceled", "Complete"],
-    startStatus:"In Progress",
-    poTemplateId:"1xiMY3cm6O7rEUCZfH7XZNpuOdsu6NjPzm6xfzdOkVLQ",
-    nLineItems:12,
-    };
-    //makePoMasterSheet(params);
-    makePoForm(params, "1gYe1xA7iR73e1ys6vzsY5MjAdt_8n0S4ZJTrzxdt5z8");
-}
-
 function setupRecords(sheet, statuses)
 {
   // The columns the system requires to function correctly. More can be added after these.
@@ -78,7 +67,8 @@ function setupRecords(sheet, statuses)
 
 function setupParams(ss, sheet, nLineItems)
 {
-  var fields = ["Timestamp","EmailAddress","Vendor","VendorContactPhone","Website","Shipping","RequestorName","RequestorPhone","SpecialInstructions"];
+  // The item order here must agree with makePoForm
+  var fields = ["Timestamp","EmailAddress","RequestorName","RequestorPhone","Vendor","VendorContactPhone","Website","SpecialInstructions","Shipping"];
   var itemFields = ["Quantity","UnitOfMeasure","Description","ItemNumber","Price"];
   var cells = [
   ["FormName","Form Responses 1"], // BEWARE OF HARDCODED VALUE

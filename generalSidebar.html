@@ -1,7 +1,7 @@
 <div id="generalSidebar" class="tabcontent">
    <!--separator-->
    <div class="block"></div>
-   <? var properties = PropertiesService.getScriptProperties() ?>
+   <? var properties = PropertiesService.getDocumentProperties() ?>
       The options below allow you to manually link new files.
       You should be sure the columns match those of the default files provided during setup.<br>
       <strong>Results are not guaranteed.</strong><br>
@@ -37,10 +37,30 @@
         <a href="<?=link?>">Open Folder</a>
       <?}?>
     </div>
+    <div class="block">
+    <!--REMOVE BEFORE PRODUCTION-->
+    <p>Remove <strong>all</strong> configuration data for this spreadsheet. Don't press unless you know what this does.</p>
+    <button id="reset" class="red" onclick="reset()">Reset</button>
+    </div>
 </div>
 
 <script>
-
+  /** FOR SOME REASON THIS DOES NOT GET CALLED WHEN IT SHOULD
+   */
+function reset()
+{
+  this.disabled=true;
+  google.script.run
+  .withSuccessHandler(function() {
+    showInfo("Successfully reset configuration");
+  })
+  .withFailureHandler(function () {
+    showError("Failed to reset configuration")
+  })
+  .withUserObject(this)
+  .clearProperties();
+}
+  
   function openPickerWindow(paramName, type)
   {
     this.disabled = true;
@@ -61,25 +81,11 @@
   
   function openById(name)
   {
-    var properties = PropertiesService.getScriptProperties();
+    var properties = PropertiesService.getDocumentProperties();
     var id = properties.getProperty(name);
     if (id == null)
     {
-      showError("openById called on nonexistent script property " + name);
+      showError("openById called on nonexistent document property " + name);
     }
   }
-
-function reset(name)
-{
-  this.disabled=true;
-  google.script.run
-  .withSuccessHandler(function() {
-    showInfo("Successfully reset configuration")
-    })
-  .withFailureHandler(function () {
-    showError("Couldn't reset configuration")
-    })
-  .withUserObject(this)
-  .installDefaultPrefs();
-}
 </script>

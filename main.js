@@ -7,7 +7,8 @@
  *     determine which authorization mode (ScriptApp.AuthMode) the trigger is
  *     running in, inspect e.authMode.
  */
-function onOpen(e) {
+function onOpen(e)
+{
   SpreadsheetApp.getUi().createAddonMenu()
       .addItem('Start', 'showSidebar')
       .addToUi();
@@ -24,13 +25,18 @@ function onOpen(e) {
  *     run in AuthMode.FULL, but onOpen triggers may be AuthMode.LIMITED or
  *     AuthMode.NONE.)
  */
-function onInstall(e) {
-  installDefaultPrefs();
+function onInstall(e)
+{
   onOpen(e);
 }
 
-function installDefaultPrefs()
+/**
+ * Install the default preferences on the given spreadsheet
+ * ss should be a Spreadsheet object, but it is not assumed to be active.
+ */
+function installDefaultPrefs(ss)
 {
+  SpreadsheetApp.setActiveSpreadsheet(ss);
   var defaults = {
    "slack-enable":"true",
    "slack-name":"New Purchase Order",
@@ -45,8 +51,7 @@ function installDefaultPrefs()
    "po-statuses":"In Progress,Complete,Canceled,Submitted",
    "po-start-status":"Submitted",
   }
-  var scriptProperties = PropertiesService.getScriptProperties();
-  scriptProperties.setProperties(defaults);
+  PropertiesService.getDocumentProperties().setProperties(defaults);
 }
 
 /**
@@ -103,11 +108,32 @@ function getOAuthToken() {
   return ScriptApp.getOAuthToken();
 }
 
-function saveParam(name, param)
+/**
+ * Terrible hack to deal with saving set up parameters before a document is set
+ */
+var setupFileParams = {};
+function saveSetupFileParam(name, param)
 {
-  PropertiesService.getScriptProperties().setProperty(name, param);
+  setupFileParams[name] = param;
+}
+function getSetupFileParams()
+{
+  return setupFileParams;
 }
 
+/**
+ * Save a document property (we need this to call setProperty from a callback in pickerDialog.html)
+ */
+function saveParam(name, param)
+{
+  PropertiesService.getDocumentProperties().setProperty(name, param);
+}
+
+function clearProperties()
+{
+  PropertiesService.getDocumentProperties().deleteAllProperties();
+}
+  
 /**
   * Expects: an object with:
   * [string] strings: a list of properties that are loaded into textfields
@@ -116,7 +142,7 @@ function saveParam(name, param)
   */
 function getPrefs(prefs)
 {
-  var properties = PropertiesService.getScriptProperties();
+  var properties = PropertiesService.getDocumentProperties();
   var result = {
     strings:{},
     checkboxes:{}
@@ -141,9 +167,9 @@ function getPrefsHelper(properties, prefsList, resultMap)
 
 function saveProps(props)
 {
-  var properties = PropertiesService.getScriptProperties();
-  properties.setProperties(props.strings);
-  properties.setProperties(props.checkboxes);
+  PropertiesService.getDocumentProperties()
+    .setProperties(props.strings)
+    .setProperties(props.checkboxes);
 }
 
 /**
@@ -156,7 +182,7 @@ function copyDefaultFiles()
   var templateBlankPoId = "1ABemUrCoLAOrIYl-c0v2vDywPH2jqmDtAkpfuU0VdKw";
   var templateFormId = "106pVHeDXl-LHUKkr5brWyaBeZFKnasGwXArmUfkNv7Y";
   // Set up to access script properties
-  var properties = PropertiesService.getScriptProperties();
+  var properties = PropertiesService.getDocumentProperties();
   // Get our system's root folder
   var PoSystemRoot = properties.getProperty('folder-root');
   if (PoSystemRoot == null) // the user has not set a root folder yet!

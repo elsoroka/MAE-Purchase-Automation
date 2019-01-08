@@ -22,19 +22,32 @@
   
   </style>
   <body>
+  <?var properties = PropertiesService.getDocumentProperties().getKeys();?>
     <!-- Tab links -->
     <div class="tab" id="tabs">
       <ul>
+      <?if (properties.length > 0) // Document properties were found; this is probably a valid system
+      {?>
         <li><a href="#generalSidebar" id="default">General</a></li>
-        <li><a href="#fileSidebar">File Setup</a></li>
         <li><a href="#slackSidebar">Slack</a></li>
         <li><a href="#emailSidebar">Email</a></li>
+      <?}
+      else
+      {?>
+        <li><a href="#fileSidebar" id="default">Setup</a></li>
+      <?}?>
       </ul>
     <div class="sidebar-branding-below" id="content">
+      <?if (properties.length > 0) // Document properties were found; this is probably a valid system
+      {?>
       <?!= includeTemplate('generalSidebar'); ?>
-      <?!= includeTemplate('fileSidebar'); ?>
       <?!= include('slackSidebar'); ?>
       <?!= includeTemplate('emailSidebar'); ?>
+      <?}
+      else
+      {?>
+      <?!= includeTemplate('fileSidebar'); ?>
+      <?}?>
     </div>
     <div class="message" id="message">
       <!--errors and info goes here-->

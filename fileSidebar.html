@@ -1,46 +1,48 @@
 <div id="fileSidebar" class="tabcontent">
+<h2>You aren't set up</h2>
+<p>If you have a purchase system, please load the existing spreadsheet and reopen this plugin.</p>
+<p>If you don't have a system yet, please follow the instructions to get started!<br>
+You may customize these files after they are created.</p>
+
   <form onsubmit="return(false)">
   <!--separator-->
    <div class="block"></div>
-   <? // THE FOLLOWING BLOCK APPEARS ONLY IF 'folder-root' IS NOT SAVED, INDICATING A BRAND NEW INSTALLATION
-   var properties = PropertiesService.getScriptProperties();
-   if (properties.getProperty('folder-root') == null) // the user has not set up anything yet
-   {
-   ?>
      <div class="block">
-      <p>For <strong>guided setup</strong> select a "home" folder for your purchase system to live in, then continue below.</p>
-      <button id="folder-root" class="blue" onclick="openPickerWindow('folder-root', 'f')">Select Home Folder</button>
+      <p>Select a "home" folder for your purchase system to live in, then continue below.</p>
+      <button id="folder-root" onclick="openPickerWindow('folder-root', 'f')">Select Home Folder</button>
+      <div id="folder-root-data">
+      </div>
     </div>
-    <?} // END "NEW INSTALLATION" BLOCK ?>
-   <p> Fill out the parameters below and click "Build Purchase Tracker".
-   You will need a Google Sheets file representing a blank purchase order. MAE projects may copy the file
-   <a href="https://docs.google.com/spreadsheets/d/1JwkjrOoqqr90rCP3AxT5QVSTaxD0cHbC0vtgOLPkmuU/">here</a>.
+   <p>Select a template blank purchase order. MAE projects may copy
+   <a href="https://docs.google.com/spreadsheets/d/1JwkjrOoqqr90rCP3AxT5QVSTaxD0cHbC0vtgOLPkmuU/">this file</a>.
    </p>
    <div class="block">
       <label class="description" for="po-statuses">Purchase Statuses (comma-separated) </label>
-	  <textarea class="width-100" id="po-statuses" rows="2"></textarea> 
+	  <textarea class="width-100" id="po-statuses" rows="2">In Progress,Complete,Canceled,Submitted</textarea> 
       <label class="description" for="po-start-status">New POs Start In Status </label>
-      <input id="po-start-status" name="po-start-status" class="element text medium" type="text" maxlength="255"/> 
+      <input id="po-start-status" name="po-start-status" class="element text medium" type="text" maxlength="255" value="In Progress"/> 
       <button id="file-po-template" onclick="openPickerWindow('file-po-template', 's')">Select PO Template</button>
-   </div>
-   <div>
-     <button id="create-purchase-sheet" onclick="runMakePoMaster()">Create Purchase Sheet</button>
+      Selected file ID: <div id="file-po-template-data">
+      </div>
    </div>
    <!--Section controlling form generation-->
    <div class="block">
      <p>This section controls generation of a purchase order form.</p>
-     <label class="description" for="po-line-items">Number of Line Items</label>
+     <label class="description" for="po-line-items">Number of Line Items</label><br>
      Check how many lines appear on your department's PO form.
      <input id="po-line-items" name="po-line-items" class="element text medium" type="text" maxlength="255" value="12"/>
-     The following information will be requested in the form:<br>
+     <p>The form automatically requests:
      Vendor, Vendor Contact Phone, Website, Shipping, Requestor Name, Requestor Phone, Special Instructions.<br>
-     The following information will be requested for each line item:<br>
-     Quantity, Unit of Measure, Description, Item #, Price.
+     Each line item requests:
+     Quantity, Unit of Measure, Description, Item #, Price.</p>
      <p>If your form requires additional information, please add it manually after generating the file.</p>
      <p>You need to set up the CurrentPO sheet so information populates in the correct places.<br>
      To make this easy, we generated some named ranges corresponding to the relevant fields. (You can also define your own!)<br>
      For example, to display the current PO vendor name in a cell, enter the formula <code>=INDIRECT(vendorName)</code><br>
      A list of all named fields will appear in the sheet.</p>
+   </div>
+   <div>
+     <button id="create-purchase-sheet" class="blue" onclick="runSetUp()">Automatic Setup</button>
    </div>
    </form>
 </div>
@@ -60,61 +62,69 @@ $(function()
     showInfo("Loaded preferences");
 });
 
-function runSetUp(name)
+/**
+ * Implements incremental update of a text field as the long PO form is being generated
+ * For some reason this is not working.
+ */
+function progressCallback(msg)
+{
+  var info = document.getElementById("info");
+  info.innerHTML += msg; // APPEND
+}
+
+function setupPickerCallback(name, id)
+{
+  document.getElementById(name).innerHTML = id;
+}
+
+function runSetUp()
 {
   this.disabled=true;
+  showInfo("runSetUp");
   // Check we have a PO template file
-  var properties = PropertiesService.getScriptProperties();
-  var templateId = properties.getProperty('file-po-template');
-  var folder = properties.getProperty('folder-root');
-  if (templateId == null) // there was no property! Halt
+  var properties = PropertiesService.getDocumentProperties();
+  if (properties == null)
+  {
+    showError("Couldn't load any properties!");
+  }
+  var fileParams = getSetupFileParams();
+  var templateId = fileParams["file-po-template"];
+  var folder = fileParams["folder-root"];
+  if (templateId == "") // there was no property! Halt
   {
     showError("Please select a PO template.");
     return;
   }
-  if (folder == null) // no root folder;
+  if (folder == "") // no root folder;
   {
     showError("Please select a folder to install the PO system");
     return;
   }
   // Construct params
-  var ssName = $('purchase-sheet-name').val();
-  if (ssName.length == 0)
+  var lineItems = int($('po-line-items').val());
+  if (lineItems <= 0)
   {
-    showError("Please enter a valid name for the spreadsheet");
+    showError("Please enter a positive number of line items");
     return;
   }
   var params = {
-    name:ssName,
+    name:"Purchasing Records",
     folder:folder,
     statuses:$('po-statuses').val().split(","),
     startStatus:$('po-start-status').val(),
     poTemplateId:templateId,
+    nLineItems:lineItems,
     };
   // Create spreadsheet, and on success link the user to it.
   google.script.run
   .withSuccessHandler(function(fileId) {
-    showInfo("Created PO master spreadsheet. <a href='"+fileId.getUrl() + "'>Check it out here!</a>")
+    showInfo("Automatic setup complete!")
     })
   .withFailureHandler(function () {
-    showError("Error occurred! Couldn't create spreadsheet.")
+    showError("Error occurred! Couldn't finish automatic setup.")
     })
   .withUserObject(this)
-  .makePoMasterSheet(params);
-}
-
-function runSetUp(name)
-{
-  this.disabled=true;
-  google.script.run
-  .withSuccessHandler(function() {
-    showInfo("Successfully completed guided setup.")
-    })
-  .withFailureHandler(function () {
-    showError("Error occurred during guided setup!")
-    })
-  .withUserObject(this)
-  .copyDefaultFiles();
+  .setupEverything(params, progressCallback);
 }
 </script>
 

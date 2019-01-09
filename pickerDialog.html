@@ -5,7 +5,7 @@
     var DEVELOPER_KEY = ''; // hmm this doesn't seem safe
     var DIALOG_DIMENSIONS = {width: 600, height: 425};
     var pickerApiLoaded = false;
-    var savetype = "a";
+    var savetype = "";
     
     /**
      * Loads the Google Picker API.
@@ -87,12 +87,15 @@
       var action = data[google.picker.Response.ACTION];
       if (action == google.picker.Action.PICKED)
       {
-        var id = data.docs[0].id;
-        google.script.run.saveParam(savetype, id); // beware of global variable
+        var saveUrl = savetype+"-url";
+        google.script.run.saveParam(saveUrl,data.docs[0].url);
+        google.script.run.saveParam(savetype, data.docs[0].id);
+        google.script.run.setMessage(saveUrl,"<a href=\""+data.docs[0].url+"\">Updated file/folder</a>");
         google.script.host.close();
       }
       else if (action == google.picker.Action.CANCEL)
       {
+        google.script.run.setMessage("info", "Canceled file selection");
         google.script.host.close();
       }
     }

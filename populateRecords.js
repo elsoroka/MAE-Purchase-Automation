@@ -22,11 +22,12 @@ function addRecords(values)
     {
       break; // we've reached the end of the populated rows
     }
+    var status = PropertiesService.getDocumentProperties().getProperty('po-start-status');
     var theRow = [timestamp, email, vendor, values[i+qtyOffset],
                   values[i+unitOffset],
                   values[i+descriptionOffset],
                   values[i+itemNumOffset],
-                  values[i+priceOffset],"=H2*D2", "In Progress"]; // extended price (quantity * price), then status
+                  values[i+priceOffset],"=H2*D2", status]; // extended price (quantity * price), then init status
     insertRow(theSheet, theRow, 2);
   }
 }

@@ -1,16 +1,16 @@
 <div id="fileSidebar" class="tabcontent">
 <h2>You aren't set up</h2>
 <p>If you have a purchase system, please load the existing spreadsheet and reopen this plugin.</p>
-<p>If you don't have a system yet, please follow the instructions to get started!<br>
+<p>If you don't have a system yet, please follow the instructions to get started!
 You may customize these files after they are created.</p>
 
   <form onsubmit="return(false)">
   <!--separator-->
    <div class="block"></div>
      <div class="block">
-      <p>Select a "home" folder for your purchase system to live in, then continue below.</p>
-      <button id="folder-root-button" onclick="openSetupPicker('folder-root', 'f')">Select Home Folder</button>
-      <div id="folder-root">
+      <p>Where should we keep the system?.</p>
+      <button id="folder-root" onclick="openPickerWindow('folder-root', 'f')">Select Home Folder</button>
+      <div id="folder-root-url">
       </div>
     </div>
    <p>Select a template blank purchase order. MAE projects may copy
@@ -21,11 +21,13 @@ You may customize these files after they are created.</p>
 	  <textarea class="width-100" id="po-statuses" rows="2">In Progress,Complete,Canceled,Submitted</textarea> 
       <label class="description" for="po-start-status">New POs Start In Status </label>
       <input id="po-start-status" name="po-start-status" class="element text medium" type="text" maxlength="255" value="In Progress"/> 
-      <button id="file-po-template-button" onclick="openSetupPicker('file-po-template', 's')">Select PO Template</button>
+      <button id="file-po-template" onclick="openPickerWindow('file-po-template', 's')">Select PO Template</button>
+      <div id="file-po-template-url">
+      </div>
    </div>
    <!--Section controlling form generation-->
    <div class="block">
-     <p>This section controls generation of a purchase order form.</p>
+     <p>Generate a purchase order form.</p>
      <label class="description" for="po-line-items">Number of Line Items</label><br>
      Check how many lines appear on your department's PO form.
      <input id="po-line-items" name="po-line-items" class="element text medium" type="text" maxlength="255" value="12"/>
@@ -35,7 +37,7 @@ You may customize these files after they are created.</p>
      Quantity, Unit of Measure, Description, Item #, Price.</p>
      <p>If your form requires additional information, please add it manually after generating the file.</p>
      <p>You need to set up the CurrentPO sheet so information populates in the correct places.<br>
-     To make this easy, we generated some named ranges corresponding to the relevant fields. (You can also define your own!)<br>
+     We generated some named ranges corresponding to the relevant fields. (You can also define your own!)<br>
      For example, to display the current PO vendor name in a cell, enter the formula <code>=INDIRECT(vendorName)</code><br>
      A list of all named fields will appear in the sheet.</p>
    </div>
@@ -46,36 +48,13 @@ You may customize these files after they are created.</p>
 </div>
 
 <script>
-var templateId = "a";
-var folder = "b";
 /**
- * Implements incremental update of a text field as the long PO form is being generated
- * For some reason this is not working.
+ * On document load, try to load the saved data if it exists
  */
-function progressUpdate(msg)
+$(function()
 {
-  var info = document.getElementById("info");
-  info.innerHTML += msg; // APPEND
-}
-
-  function openSetupPicker(paramName, type)
-  {
-    this.disabled = true;
-    showInfo("test");
-    google.script.run
-    .withSuccessHandler(
-      function(msg, element) {
-        showInfo("Opening picker window");
-        element.disabled = false;
-      })
-    .withFailureHandler(
-      function(msg, element) {
-        showError(msg);
-        element.disabled = false;
-      })
-    .withUserObject(this)
-    .showPicker(paramName, type, true);
-  }
+  populateHtmlLinksIfNotNull();
+});
 
 function runSetUp()
 {
@@ -99,10 +78,32 @@ function runSetUp()
   google.script.run.withSuccessHandler(
     function (urlToSheet)
     {
-      progressUpdate("Finished! Check your <a href=\""+urlToSheet+"\">purchase sheet</a>");
+      var msg = "Finished! Check your <a href=\""+urlToSheet+"\">purchase sheet</a>";
+      progressUpdate(msg);
+      script.google.run.showAlert("\nYou need to set up your PO template in the new purchase spreadsheet.\n\
+We generated some named ranges corresponding to relevant fields.\
+For example, to display the current PO vendor name in a cell, enter the formula =INDIRECT(vendorName)\
+A list of all named fields will appear in the sheet.");
+      populateHtmlLinksIfNotNull();
+
     })
     .withFailureHandler(showError)
     .getSetupPropertiesRunSetup(params);
+}
+
+function populateHtmlLinksIfNotNull()
+{
+  var props = PropertiesService.getDocumentProperties();
+  var folderPo = props.getProperty("folder-po-url");
+  if (folderPo != null)
+  {
+    document.getElementById("folder-po-url").innerHTML = "<a href=\"" + folderPo + "\">Open PO Folder</a>";
+  }
+  var filePoTemplate = props.getProperty("file-po-template-url");
+  if (filePoTemplate != null)
+  {
+    document.getElementById("file-po-template-url").innerHTML = "<a href=\"" + filePoTemplate + "\">Open PO Template</a>";
+  }
 }
 /*
 get form params

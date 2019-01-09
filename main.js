@@ -78,6 +78,15 @@ function includeTemplate(filename) {
 }
 
 /**
+ * Show an alert from an HTML file
+ */
+function showAlert(msg)
+{
+  var ui = SpreadsheetApp.getUi();
+  ui.alert(msg);
+}
+ 
+/**
  * Displays an HTML-service dialog in Google Sheets that contains client-side
  * JavaScript code for the Google Picker API.
  */
@@ -90,7 +99,7 @@ function showPicker(name, type)
       .setWidth(600)
       .setHeight(425)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Select a file ' + type);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Select a file ');
 }
 
 /**
@@ -107,11 +116,38 @@ function getOAuthToken() {
   DriveApp.getRootFolder();
   return ScriptApp.getOAuthToken();
 }
+/**
+ * Terrible hack implementing a way to pass messages back from the modalWindow to the sidebar,
+ * or generally from server to client side, because the sidebar is not the parent of the modalWindow.
+ */
+function setMessage(element, newMsg)
+{
+  PropertiesService.getScriptProperties().setProperties({
+    "msg":newMsg,
+    "element":element,
+  });
+}
+function getMessage()
+{
+  var props = PropertiesService.getScriptProperties();
+  var tmp = props.getProperty("msg");
+  var element = props.getProperty("element");
+  if (tmp == null)
+  {
+    tmp = "";
+  }
+  props.setProperty("msg", "");
+  return {
+    msg:tmp,
+    stop:(tmp != ""),
+    element:element,
+    };
+}
 
 /**
  * Save a document property (we need this to call setProperty from a callback in pickerDialog.html)
  */
-function saveParam(name, param)
+function saveParam(name,param)
 {
   PropertiesService.getDocumentProperties().setProperty(name, param);
 }
@@ -126,8 +162,9 @@ function clearPropertiesWithModalConfirm()
   if (response == ui.Button.YES)
   {
     PropertiesService.getDocumentProperties().deleteAllProperties();
+    removeTriggers(SpreadsheetApp.getActiveSpreadsheet());
   }
-  return (response == ui.button.YES) ? true : false;
+  return (response == ui.button.YES) ? true : false; // true: delete occurred. false: delete was canceled.
 }
 
 /**
@@ -138,7 +175,7 @@ function getSetupPropertiesRunSetup(params)
   var props = PropertiesService.getDocumentProperties();
   params.poTemplateId = props.getProperty("file-po-template");
   params.folder = props.getProperty("folder-root");
-  // clean up the document properties
+  // clean up the document properties since this is NOT a working system and may be some random file
   props.deleteAllProperties();
   // Check we have a PO template file
   if (params.poTemplateId == null) // there was no property! Halt
@@ -192,66 +229,29 @@ function saveProps(props)
     .setProperties(props.checkboxes);
 }
 
-/**
-  * Terrible hack function to copy the "template" files
-  * Will also save the file IDs
-  */
-function copyDefaultFiles()
-{
-  var templatePurchaseSheetId = "1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4";
-  var templateBlankPoId = "1ABemUrCoLAOrIYl-c0v2vDywPH2jqmDtAkpfuU0VdKw";
-  var templateFormId = "106pVHeDXl-LHUKkr5brWyaBeZFKnasGwXArmUfkNv7Y";
-  // Set up to access script properties
-  var properties = PropertiesService.getDocumentProperties();
-  // Get our system's root folder
-  var PoSystemRoot = properties.getProperty('folder-root');
-  if (PoSystemRoot == null) // the user has not set a root folder yet!
-  {
-    throw("Please set a root folder before running setup!");
-  }
-  PoSystemRoot = DriveApp.getFolderById(PoSystemRoot);
-  
-  // copySpreadsheet will return the file IDs
-  //var purchaseSheetId = copySpreadsheet(templatePurchaseSheetId, "Purchase Master", PoSystemRoot).getId();
-  //properties.setProperty('file-purchase-sheet', purchaseSheetId);
-  //properties.setProperty('file-po-template', copySpreadsheet(templateBlankPoId, "PO Template", PoSystemRoot).getId());
-  // Install the form trigger on the file ID
-  //var purchaseSheetId = properties.getProperty('file-purchase-sheet');
-  //installTrigger(purchaseSheetId);
-  // Copy the form template
-  var form = FormApp.openById(templateFormId);
-  var formData = DriveApp.getFileById(form.getId());
-  formData.makeCopy(formData.getName(), PoSystemRoot);
-}
-
-// Given the file ID of a template file, make a copy in the PO system root
-// Fails if no PO system root set in scriptProperties
-// Returns the Spreadsheet object for the new sheet
-function copySpreadsheet(templateId, newName, destination)
-{
-  // Open the template spreadsheet and make a copy
-  var ss = SpreadsheetApp.openById(templateId);
-  SpreadsheetApp.setActiveSpreadsheet(ss);
-  var ssCopy = ss.copy(newName);
-  var newFile = DriveApp.getFileById(ssCopy.getId());
-  // Now the copy is in the user root folder, and we want to move it
-  var userRoot = DriveApp.getRootFolder();
-  destination.addFile(newFile);
-  userRoot.removeFile(newFile);
-  return ssCopy;
-}
-
 // In the Script Editor, run installTrigger() at least once to make your code execute on form submit
 // ss should be an open spreadsheet object
-function installTrigger(ss) {
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i in triggers) {
-    ScriptApp.deleteTrigger(triggers[i]);
-  }
-  ScriptApp.newTrigger("purchaseForm")
+function installTrigger()
+{
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  //removeTriggers(ss);
+  ScriptApp.newTrigger("purchaseForm") // Run purchaseForm function (taking form response as parameter) on form submit
     .forSpreadsheet(ss)
     .onFormSubmit()
     .create();
+  var userEmail = Session.getActiveUser().getEmail();
+  PropertiesService.getDocumentProperties().setProperty("user",userEmail);
+  return userEmail;
+}
+
+function removeTriggers()
+{
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var triggers = ScriptApp.getUserTriggers(ss);
+  for (var i in triggers) {
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
+  var props = PropertiesService.getDocumentProperties().deleteProperty("user");
 }
 
 // Running the code in initialize() will cause this function to be triggered this on every Form Submit

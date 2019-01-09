@@ -15,13 +15,19 @@ function setupEverything(params)
   // Install default params on the new poMaster spreadsheet
   installDefaultPrefs(poMaster);
   // Save the new properties*/
+  var openFolder = DriveApp.getFileById(params.folder);
   SpreadsheetApp.setActiveSpreadsheet(poMaster);
   PropertiesService.getDocumentProperties().setProperties({
     "po-start-status":params.startStatus,
-    "file-purchase-sheet":poMaster.getId(),
-    "file-po-template":params.poTemplateId,
-    "folder-root":params.folder,
-    "system-enable":true,
+    "file-purchase-sheet":poMaster.getId(), // Purchase spreadsheet
+    "file-po-template":params.poTemplateId, // Template blank PO file
+    "folder-root":params.folder, // Root folder
+    "folder-po":params.folder, // Folder new POs will be saved to
+    "system-enable":true, // Now the system is (mostly) ready!
+    "folder-root-url":openFolder.getUrl(),
+    "folder-po-url":openFolder.getUrl(),
+    "file-purchase-sheet-url":poMaster.getUrl(),
+    "file-po-template-url":SpreadsheetApp.openById(params.poTemplateId).getUrl(),
     });
   return poMaster;
 }

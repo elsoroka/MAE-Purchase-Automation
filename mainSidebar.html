@@ -72,9 +72,6 @@ $(function()
   $( "#tabs" ).tabs();
 });
 
-// Open the default tab
-//document.getElementById("default").click();
-
 function loadTab(name)
 {
   var tabcontent = document.getElementsByClassName("tabcontent");
@@ -137,5 +134,52 @@ function showInfo(msg)
 {
   var info = document.getElementById("info");
   info.innerHTML = msg;
+}
+/**
+ * Implements append update of "info"
+ */
+function progressUpdate(msg)
+{
+  var info = document.getElementById("info");
+  info.innerHTML += msg; // APPEND
+}
+
+  function openPickerWindow(paramName, type)
+  {
+    this.disabled = true;
+    waitForUpdate();
+    google.script.run
+    .withSuccessHandler(
+      function(msg, element) {
+        showInfo("Opening file dialog");
+        element.disabled = false;
+      })
+    .withFailureHandler(
+      function(msg, element) {
+        showError(msg);
+        element.disabled = false;
+      })
+    .withUserObject(this)
+    .showPicker(paramName, type);
+  }
+  
+  // polling test
+function waitForUpdate()
+{
+  google.script.run.withSuccessHandler(
+    function (poller)
+    {
+      if (!(poller.stop)) // nothing yet
+      {
+        setTimeout(waitForUpdate,2000);
+      }
+      else
+      {
+        showInfo(poller.msg);
+        document.getElementById(poller.element).innerHTML = poller.msg;
+      }
+    })
+    .withFailureHandler(showError)
+    .getMessage();
 }
 </script>

@@ -1,6 +1,17 @@
 <div id="generalSidebar" class="tabcontent">
-   <!--separator-->
-   <div class="block"></div>
+  <form onsubmit="return(false)">
+  <!--separator-->
+  <div class="block"></div>
+    <div class="block form-group">
+      <div>
+        <label class="description" for="po-start-status"><i class="fa" title="New POs begin in this status">&#xf05a;</i> PO Start Status</label>
+        <input id="po-start-status" name="po-start-status" class="element text medium" type="text" maxlength="255" value=""/><br>
+      </div>
+      <div class="block" id="button-bar">
+        <button id="misc-save" onclick="savePrefs(miscPropKeys)" >Save</button>
+      </div>
+    </div>
+  </form>
    <? var properties = PropertiesService.getDocumentProperties();
       var triggerUserEmail = properties.getProperty("user");
    ?>
@@ -23,10 +34,10 @@
     <?}
     else
     {?>
+    <button id="install-trigger" onclick="installUserTrigger()" disabled=true>Install Trigger</button>
     <div id="install-trigger-info">
     <p>The script will run under <?=triggerUserEmail?>'s account when a form is submitted.</p>
     </div>
-    <button id="install-trigger" onclick="installUserTrigger()" disabled=true>Install Trigger</button>
     <?}?>
     </div>
     <div class="block" id="button-bar">
@@ -36,7 +47,7 @@
       <?var url = properties.getProperty('folder-po-url');
       if (url != null)
       {?>
-        <a href="<?=url?>">PO Destination Folder</a>
+        <a class="link" href="<?=url?>">Open PO Destination Folder</a>
       <?}?>
       </div>
     </div>
@@ -47,6 +58,20 @@
     </div>
 </div>
 <script>
+// AUGH a global variable
+var miscPropKeys = {
+  strings:["po-start-status",],
+  checkboxes:[],
+  };
+/**
+ * Try to load the file preferences if they exist
+ */
+$(function()
+{
+  google.script.run.withSuccessHandler(loadPrefs)
+    .withFailureHandler(showError).getPrefs(miscPropKeys);
+});
+
 function uninstallUserTrigger()
 {
   this.disabled = true;
@@ -71,7 +96,7 @@ function installUserTrigger()
       showInfo("Installed trigger for user " + email);
       document.getElementById("install-trigger").disabled = true;
       document.getElementById("uninstall-trigger").disabled = false;
-      document.getElementById("install-trigger-info").innerHTML = "<p>The script will run under <?=triggerUserEmail?>'s account when a form is submitted.</p>";
+      document.getElementById("install-trigger-info").innerHTML = "<p>The script will run under "+email+"'s account when a form is submitted.</p>";
     })
     .withFailureHandler(showError)
     .installTrigger();

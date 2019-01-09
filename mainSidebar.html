@@ -6,21 +6,14 @@
     <!-- The CSS package above applies Google styling to buttons and other elements. -->
     <!-- "Googly" theme CSS to fix tabs. Comes from https://stackoverflow.com/questions/38052215/how-to-make-html-tabs-match-googles-css-spec-for-add-ons -->
     <link rel="stylesheet" href="https://cdn.rawgit.com/mogsdad/e13b618322ec87ca8d28/raw/f1f96f797dadf968276c63de4df0bb04fb80646f/googly-jquery-ui.css">
+    <!--nice symbols-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <?!= include('style'); ?>
   
   </head>
-  <style>
-  div.sidebar-branding-below
-  {
-    position:relative;
-  }
-  div.message
-  {
-    padding-top:12px
-  }
-  
-  </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
   <body>
   <?var properties = PropertiesService.getDocumentProperties();?>
     <!-- Tab links -->
@@ -34,7 +27,7 @@
       <?}
       else
       {?>
-        <li><a href="#fileSidebar" id="default">Setup</a></li>
+        <li><a href="#setupSidebar" id="default">Setup</a></li>
       <?}?>
       </ul>
     <div class="sidebar-branding-below" id="content">
@@ -59,17 +52,21 @@
     </div>
   </body>
 </html>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <script>
 
 /**
- * Set up tabs on page load
+ * Set up tabs and tooltips on page load
  */
 $(function()
 {
   $( "#tabs" ).tabs();
+  var tooltips = $( "[title]" ).tooltip({
+      position: {
+        my: "left top",
+        at: "right+5 top-5",
+        collision: "none"
+      }
+    });
 });
 
 function loadTab(name)
@@ -103,19 +100,16 @@ function savePrefs(propKeys)
 {
   this.disabled = true;
   var props = {strings:{}, checkboxes:{}};
-  var msg = "\n";
   for (var i=0; i<propKeys.strings.length; ++i) // retrieve values from textfields
   {
     props.strings[propKeys.strings[i]] = $("#"+propKeys.strings[i]).val();
-    msg += " " + propKeys.strings[i] + " ";
   }
   for (var i=0; i<propKeys.checkboxes.length; ++i) // retrieve values from checkboxes
   {
     props.checkboxes[propKeys.checkboxes[i]] = $('#'+propKeys.checkboxes[i]).is(':checked');
-    msg += " " + propKeys.checkboxes[i] + " ";
   }
   google.script.run.saveProps(props);
-  showInfo("Saved configuration" + msg);
+  showInfo("Saved configuration");
 }
 
 /**

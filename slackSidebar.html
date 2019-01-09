@@ -7,34 +7,37 @@
           <label for="slack-enable" value="true">Enable Slack</label>
           
           <div>
-            <label class="description" for="slack-webhook">Slack Webhook </label>
+          <p>A webhook allows this system to post in Slack. Please follow <a class="link" href="https://api.slack.com/incoming-webhooks#getting-started">these instructions</a> to get one.</p>
+            <label class="description" for="slack-webhook" ><i class="fa" title="Make sure to test your webhook">&#xf05a;</i> Slack Webhook</label>
 			<textarea class="width-100" id="slack-webhook" rows="2"></textarea>
           </div>
           <div>
-            <label class="description" for="slack-channel">Channel </label>
+            <label class="description" for="slack-channel"><i class="fa" title="The channel updates will post to">&#xf05a;</i> Channel</label>
 			<input id="slack-channel" name="slack-channel" class="element text medium" type="text" maxlength="255" value=""/> 
           </div>
           <div>
-            <label class="description" for="slack-name">PO Bot Name </label>
+            <label class="description" for="slack-name"><i class="fa" title="The name your system posts under">&#xf05a;</i> PO Bot Name</label>
 			<input id="slack-name" name="slack-name" class="element text medium" type="text" maxlength="255" value=""/> 
           </div>
           <div>
-            <label class="description" for="slack-icon">PO Bot Icon </label>
+            <label class="description" for="slack-icon"><i class="fa" title="A Slack emoji used as the system icon">&#xf05a;</i> PO Bot Icon</label>
 			<input id="slack-icon" name="slack-icon" class="element text medium" type="text" maxlength="255" value=""/> 
           </div>
           <div>
-            <label class="description" for="slack-color">Message Color </label>
+            <label class="description" for="slack-color"><i class="fa" title="good, warning, danger, or a hex color code">&#xf05a;</i> Message Color</label>
 			<input id="slack-color" name="slack-color" class="element text medium" type="text" maxlength="255" value=""/> 
           </div>
           <div>
-            <label class="description" for="slack-fallback">Message Fallback </label>
+            <label class="description" for="slack-fallback">
+            <i class="fa" title="Plaintext displayed when a formatted message can't be rendered">&#xf05a;</i> Message Fallback</label>
 			<textarea class="width-100" id="slack-fallback" rows="2"></textarea> 
           </div>
           <div>
-            <label class="description" for="slack-pretext">Message Pretext </label>
+            <label class="description" for="slack-pretext">
+            <i class="fa" title="Header text for purchase order message">&#xf05a;</i> Message Pretext</label>
 			<textarea class="width-100" id="slack-pretext" rows="2"></textarea> 
           </div>
-          
+          <p>To read more about these parameters, please consult the <a class="link" href="https://api.slack.com/docs/message-attachments">Slack API documentation</a>.</p>
         </div>
         
         <div class="block" id="button-bar">
@@ -44,8 +47,6 @@
 
       </form>
       </div>
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
     
 // AUGH a global variable
@@ -53,10 +54,6 @@ var slackPropKeys = {
   strings:["slack-webhook", "slack-channel", "slack-name", "slack-icon", "slack-color", "slack-fallback", "slack-pretext"],
   checkboxes:["slack-enable"],
   };
-/**
- * Reference:
- * https://developers.google.com/gsuite/add-ons/editors/docs/quickstart/translate
- */
 /**
  * On document load, try to load the user's preferences if they exist
  */

@@ -90,7 +90,8 @@
         var saveUrl = savetype+"-url";
         google.script.run.saveParam(saveUrl,data.docs[0].url);
         google.script.run.saveParam(savetype, data.docs[0].id);
-        google.script.run.setMessage(saveUrl,"<a href=\""+data.docs[0].url+"\">Updated file/folder</a>");
+        google.script.run.setMessage(saveUrl,"<a class=\"link\
+        " href=\""+data.docs[0].url+"\">Updated file/folder</a>");
         google.script.host.close();
       }
       else if (action == google.picker.Action.CANCEL)

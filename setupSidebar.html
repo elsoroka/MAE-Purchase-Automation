@@ -1,4 +1,4 @@
-<div id="fileSidebar" class="tabcontent">
+<div id="setupSidebar" class="tabcontent">
 <h2>You aren't set up</h2>
 <p>If you have a purchase system, please load the existing spreadsheet and reopen this plugin.</p>
 <p>If you don't have a system yet, please follow the instructions to get started!
@@ -14,7 +14,7 @@ You may customize these files after they are created.</p>
       </div>
     </div>
    <p>Select a template blank purchase order. MAE projects may copy
-   <a href="https://docs.google.com/spreadsheets/d/1JwkjrOoqqr90rCP3AxT5QVSTaxD0cHbC0vtgOLPkmuU/">this file</a>.
+   <a class="link" href="https://docs.google.com/spreadsheets/d/1JwkjrOoqqr90rCP3AxT5QVSTaxD0cHbC0vtgOLPkmuU/">this file</a>.
    </p>
    <div class="block">
       <label class="description" for="po-statuses">Purchase Statuses (comma-separated) </label>
@@ -78,7 +78,7 @@ function runSetUp()
   google.script.run.withSuccessHandler(
     function (urlToSheet)
     {
-      var msg = "Finished! Check your <a href=\""+urlToSheet+"\">purchase sheet</a>";
+      var msg = "Finished! Check your <a class=\"link\" href=\""+urlToSheet+"\">purchase sheet</a>";
       progressUpdate(msg);
       script.google.run.showAlert("\nYou need to set up your PO template in the new purchase spreadsheet.\n\
 We generated some named ranges corresponding to relevant fields.\
@@ -97,12 +97,12 @@ function populateHtmlLinksIfNotNull()
   var folderPo = props.getProperty("folder-po-url");
   if (folderPo != null)
   {
-    document.getElementById("folder-po-url").innerHTML = "<a href=\"" + folderPo + "\">Open PO Folder</a>";
+    document.getElementById("folder-po-url").innerHTML = "<a class=\"link\" href=\"" + folderPo + "\">Open PO Folder</a>";
   }
   var filePoTemplate = props.getProperty("file-po-template-url");
   if (filePoTemplate != null)
   {
-    document.getElementById("file-po-template-url").innerHTML = "<a href=\"" + filePoTemplate + "\">Open PO Template</a>";
+    document.getElementById("file-po-template-url").innerHTML = "<a class=\"link\" href=\"" + filePoTemplate + "\">Open PO Template</a>";
   }
 }
 /*

@@ -48,11 +48,13 @@ You may customize these files after they are created.</p>
 </div>
 
 <script>
+var templateId = "a";
+var folder = "b";
 /**
  * Implements incremental update of a text field as the long PO form is being generated
  * For some reason this is not working.
  */
-function progressCallback(msg)
+function progressUpdate(msg)
 {
   var info = document.getElementById("info");
   info.innerHTML += msg; // APPEND
@@ -76,60 +78,39 @@ function progressCallback(msg)
     .withUserObject(this)
     .showPicker(paramName, type, true);
   }
-  
-function setupPickerCallback(name, id)
-{
-  document.getElementById(name).innerHTML = id;
-}
 
 function runSetUp()
 {
   this.disabled=true;
-  showInfo("runSetUp");
-  // Check we have a PO template file
-  var properties = PropertiesService.getDocumentProperties();
-  if (properties == null)
-  {
-    showError("Couldn't load any properties!");
-  }
-  var fileParams = getSetupFileParams();
-  var templateId = fileParams["file-po-template"];
-  var folder = fileParams["folder-root"];
-  if (templateId == "") // there was no property! Halt
-  {
-    showError("Please select a PO template.");
-    return;
-  }
-  if (folder == "") // no root folder;
-  {
-    showError("Please select a folder to install the PO system");
-    return;
-  }
   // Construct params
-  var lineItems = int($('po-line-items').val());
-  if (lineItems <= 0)
+  var lineItems = Number($('#po-line-items').val());
+  if ((lineItems == undefined) || (lineItems <= 0))
   {
-    showError("Please enter a positive number of line items");
-    return;
+    throw("Please enter a positive number of line items");
   }
+  /* The Params object required for automated setup */
   var params = {
     name:"Purchasing Records",
-    folder:folder,
-    statuses:$('po-statuses').val().split(","),
-    startStatus:$('po-start-status').val(),
-    poTemplateId:templateId,
+    folder:null,
+    statuses:$('#po-statuses').val().split(","),
+    startStatus:$('#po-start-status').val(),
+    poTemplateId:null,
     nLineItems:lineItems,
-    };
-  // Create spreadsheet, and on success link the user to it.
-  google.script.run
-  .withSuccessHandler(function(fileId) {
-    showInfo("Automatic setup complete!")
+  };
+  progressUpdate("Starting setup...This will take a few minutes.<br>");
+  google.script.run.withSuccessHandler(
+    function (urlToSheet)
+    {
+      progressUpdate("Finished! Check your <a href=\""+urlToSheet+"\">purchase sheet</a>");
     })
-  .withFailureHandler(function () {
-    showError("Error occurred! Couldn't finish automatic setup.")
-    })
-  .withUserObject(this)
-  .setupEverything(params, progressCallback);
+    .withFailureHandler(showError)
+    .getSetupPropertiesRunSetup(params);
 }
+/*
+get form params
+google.script.run get document properties
+on success
+do the things
+*/
 </script>
 

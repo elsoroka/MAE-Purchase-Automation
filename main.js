@@ -81,12 +81,11 @@ function includeTemplate(filename) {
  * Displays an HTML-service dialog in Google Sheets that contains client-side
  * JavaScript code for the Google Picker API.
  */
-function showPicker(name, type, isSetupMode)
+function showPicker(name, type)
 {
   var html = HtmlService.createTemplateFromFile('pickerDialog');
   html.paramName = name;
   html.pickerType = type;
-  html.isSetupMode = isSetupMode;
   html = html.evaluate()
       .setWidth(600)
       .setHeight(425)
@@ -110,19 +109,6 @@ function getOAuthToken() {
 }
 
 /**
- * Terrible hack to deal with saving set up parameters before a document is set
- */
-var setupFileParams = {};
-function saveSetupFileParam(name, param)
-{
-  setupFileParams[name] = param;
-}
-function getSetupFileParams()
-{
-  return setupFileParams;
-}
-
-/**
  * Save a document property (we need this to call setProperty from a callback in pickerDialog.html)
  */
 function saveParam(name, param)
@@ -133,6 +119,30 @@ function saveParam(name, param)
 function clearProperties()
 {
   PropertiesService.getDocumentProperties().deleteAllProperties();
+}
+
+/**
+ * We need this because for some reason you can't access properties from html files
+ */
+function getSetupPropertiesRunSetup(params)
+{
+  var props = PropertiesService.getDocumentProperties();
+  params.poTemplateId = props.getProperty("file-po-template");
+  params.folder = props.getProperty("folder-root");
+  // clean up the document properties
+  props.deleteAllProperties();
+  // Check we have a PO template file
+  if (params.poTemplateId == null) // there was no property! Halt
+  {
+    throw("Please select a PO template.");
+  }
+  if (params.folder == null) // no root folder;
+  {
+    throw("Please select a folder to install the PO system");
+  }
+  var poMaster = setupEverything(params);
+  installDefaultPrefs(poMaster);
+  return poMaster.getUrl();
 }
   
 /**

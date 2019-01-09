@@ -5,25 +5,24 @@
  * fileId poTemplateId: a blank PO spreadsheet.
  * integer nLineItems: the number of line items to support
  */
-function setupEverything(params, progressCallback)
+function setupEverything(params)
 {
-  //var poMaster = makePoMasterSheet(params);
-  var poMaster = SpreadsheetApp.openById("1gYe1xA7iR73e1ys6vzsY5MjAdt_8n0S4ZJTrzxdt5z8");
-  progressCallback("Created Purchase Order sheet: <a href='"+poMaster.getUrl()+"'>Open</a><br>");
- // var poForm = makePoForm(params, poMaster.getId());
-  progressCallback("Created New Purchase Order form: <a href='"+poForm.getUrl()+"'>Open</a><br>");
+  var poMaster = makePoMasterSheet(params);
+  //var poMaster = SpreadsheetApp.openById("1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4");
+  var poForm = makePoForm(params, poMaster.getId());
   // Install the "on form submit" trigger for poMaster
- // installTrigger(poMaster);
+  installTrigger(poMaster);
   // Install default params on the new poMaster spreadsheet
   installDefaultPrefs(poMaster);
   // Save the new properties
+  SpreadsheetApp.setActiveSpreadsheet(poMaster);
   PropertiesService.getDocumentProperties().setProperties({
     "po-start-status":params.startStatus,
     "file-purchase-sheet":poMaster.getId(),
     "file-po-template":params.poTemplateId,
     "folder-root":params.folder,
+    "system-enable":true,
     });
-  progressCallback("Installed 'on form submit' trigger and saved configuration.<br>");
   return poMaster;
 }
 
@@ -196,7 +195,7 @@ function makePoForm(params, linkToId)
     {title:"Website", required:true, validation:null, help:""},
     {title:"Special Instructions", required:false, validation:null, help:"Coupon codes, shipping instructions, or other notes"},
     ];
-  addTextItemsHelper(poForm, textItems, false);
+  addTextItemsHelper(poForm, textItems, undefined); // don't enumerate these items
   
   // Add the multiple-choice shipping selector
   poForm.addMultipleChoiceItem().setTitle("Shipping")
@@ -221,7 +220,7 @@ For Amazon orders, this is the ASIN number on the item page."},
   for (var i=1; i<=params.nLineItems; ++i)
   {
     poForm.addPageBreakItem().setTitle("Line " + i).setHelpText(lineHelpText);
-    addTextItemsHelper(poForm, lineTextItems, true); // CHANGE to TRUE
+    addTextItemsHelper(poForm, lineTextItems, i); // enumerate items per line (i)
     if (i != params.nLineItems) // Do not add this to the last line
     {
       var switchItem = poForm.addMultipleChoiceItem().setTitle("Add another line?");
@@ -238,13 +237,13 @@ For Amazon orders, this is the ASIN number on the item page."},
   return poForm;
 }
 
-function addTextItemsHelper(form, textItems, enumerate)
+function addTextItemsHelper(form, textItems, number)
 {
   var len = textItems.length;
   for (var i=0; i<len; ++i)
   {
     var item = form.addTextItem()
-      .setTitle((enumerate) ? "Line "+i+textItems[i].title : textItems[i].title) // Optionally enumerate items
+      .setTitle((number == undefined) ? textItems[i].title : "Line "+i+textItems[i].title) // Optionally enumerate items with provided number
       .setRequired(textItems[i].required)
       .setHelpText(textItems[i].help);
     if (textItems[i].validation != null)

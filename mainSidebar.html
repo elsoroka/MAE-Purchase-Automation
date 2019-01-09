@@ -22,11 +22,11 @@
   
   </style>
   <body>
-  <?var properties = PropertiesService.getDocumentProperties().getKeys();?>
+  <?var properties = PropertiesService.getDocumentProperties();?>
     <!-- Tab links -->
     <div class="tab" id="tabs">
       <ul>
-      <?if (properties.length > 0) // Document properties were found; this is probably a valid system
+      <?if (properties.getProperty("system-enable") != null) // Document properties were found; this is a valid system
       {?>
         <li><a href="#generalSidebar" id="default">General</a></li>
         <li><a href="#slackSidebar">Slack</a></li>
@@ -38,7 +38,7 @@
       <?}?>
       </ul>
     <div class="sidebar-branding-below" id="content">
-      <?if (properties.length > 0) // Document properties were found; this is probably a valid system
+      <?if (properties.getProperty("system-enable") != null) // Document properties were found; this is a valid system
       {?>
       <?!= includeTemplate('generalSidebar'); ?>
       <?!= include('slackSidebar'); ?>

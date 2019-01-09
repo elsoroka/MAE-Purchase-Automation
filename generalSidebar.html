@@ -51,14 +51,21 @@ function reset()
 {
   this.disabled=true;
   google.script.run
-  .withSuccessHandler(function() {
-    showInfo("Successfully reset configuration");
+  .withSuccessHandler(function(didClear) {
+    if (didClear)
+    {
+      showInfo("Successfully reset configuration");
+    }
+    else
+    {
+      showInfo("Reset canceled");
+    }
   })
   .withFailureHandler(function () {
     showError("Failed to reset configuration")
   })
   .withUserObject(this)
-  .clearProperties();
+  .clearPropertiesWithModalConfirm();
 }
   
   function openPickerWindow(paramName, type)

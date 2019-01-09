@@ -7,14 +7,14 @@
  */
 function setupEverything(params)
 {
-  var poMaster = makePoMasterSheet(params);
-  //var poMaster = SpreadsheetApp.openById("1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4");
-  var poForm = makePoForm(params, poMaster.getId());
+  //var poMaster = makePoMasterSheet(params);
+  var poMaster = SpreadsheetApp.openById("1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4");
+  /*var poForm = makePoForm(params, poMaster.getId());
   // Install the "on form submit" trigger for poMaster
   installTrigger(poMaster);
   // Install default params on the new poMaster spreadsheet
   installDefaultPrefs(poMaster);
-  // Save the new properties
+  // Save the new properties*/
   SpreadsheetApp.setActiveSpreadsheet(poMaster);
   PropertiesService.getDocumentProperties().setProperties({
     "po-start-status":params.startStatus,

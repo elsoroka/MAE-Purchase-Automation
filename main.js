@@ -116,9 +116,18 @@ function saveParam(name, param)
   PropertiesService.getDocumentProperties().setProperty(name, param);
 }
 
-function clearProperties()
+function clearPropertiesWithModalConfirm()
 {
-  PropertiesService.getDocumentProperties().deleteAllProperties();
+  // Display a dialog box with a message and "Yes" and "No" buttons. The user can also close the
+  // dialog by clicking the close button in its title bar.
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert('This will delete all configuration for this document. The system will NOT work. Continue?', ui.ButtonSet.YES_NO);
+  // Process the user's response.
+  if (response == ui.Button.YES)
+  {
+    PropertiesService.getDocumentProperties().deleteAllProperties();
+  }
+  return (response == ui.button.YES) ? true : false;
 }
 
 /**

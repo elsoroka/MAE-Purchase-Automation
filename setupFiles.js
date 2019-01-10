@@ -7,17 +7,21 @@
  */
 function setupEverything(params)
 {
-  var poMaster = SpreadsheetApp.openById("1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4");
-  var poForm = FormApp.openById("1HMqExnCDEdHJLmMj6TnH__iyK1hrHqETNrjWY6nn9WU");
-  /*var poMaster = makePoMasterSheet(params);
+  var poMaster = makePoMasterSheet(params);
   var poForm = makePoForm(params, poMaster.getId());
   // Install the "on form submit" trigger for poMaster
-  installTrigger(poMaster);*/
+  installTrigger(poMaster);
   // Install default params on the new poMaster spreadsheet
   installDefaultPrefs(poMaster);
   // Save the new properties
   var openFolder = DriveApp.getFileById(params.folder);
   SpreadsheetApp.setActiveSpreadsheet(poMaster);
+  
+  // Force formulas to update by editing this (now that the form responses sheet is there!)
+  // fixes a problem with dynamic named ranges based on form name "Form Responses 1"
+  poMaster.getSheetByName("Params").getRange("FormName").setValue("Form Responses 1");
+  
+  // Save config as  document properties
   PropertiesService.getDocumentProperties().setProperties({
     "po-start-status":params.startStatus,
     "file-purchase-sheet":poMaster.getId(), // Purchase spreadsheet
@@ -47,12 +51,12 @@ function makePoMasterSheet(params)
   // Build up the PO stuff - WORKING
   SpreadsheetApp.setActiveSpreadsheet(poMaster)
   poMaster.setActiveSheet(poMaster.getSheets()[0])
+  
   // Generate the records and params sheets
   poMaster.renameActiveSheet("Records");
   setupRecords(poMaster.getActiveSheet(), params.statuses); // working
   setupParams(poMaster, poMaster.insertSheet("Params", 2), params.nLineItems); // working
   copyTemplateToMaster(params.poTemplateId, poMaster, "CurrentPO"); // working
-  
   return poMaster;
 }
 

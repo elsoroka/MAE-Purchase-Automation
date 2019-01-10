@@ -21,8 +21,8 @@ function setupEverything(params)
   // fixes a problem with dynamic named ranges based on form name "Form Responses 1"
   poMaster.getSheetByName("Params").getRange("FormName").setValue("Form Responses 1");
   
-  // Save config as  document properties
-  PropertiesService.getDocumentProperties().setProperties({
+  // Save config as user properties, terrible hack. we wil save them to the document when the user opens the correct document.
+  PropertiesService.getUserProperties().setProperties({
     "po-start-status":params.startStatus,
     "file-purchase-sheet":poMaster.getId(), // Purchase spreadsheet
     "file-po-template":params.poTemplateId, // Template blank PO file

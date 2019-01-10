@@ -265,3 +265,16 @@ function purchaseForm(e)
   submitValuesToSlack(e, e.values[nameColumn] + ", your PO is at " + newPO.getUrl());
   emailPO(e.values[emailColumn], newPO);
 }
+
+function handleSetup()
+{
+  var userProps = PropertiesService.getUserProperties();
+  // Fail if not in setup
+  if (userProps.getKeys().length == 0)
+  {
+    throw("not in setup");
+  }
+  // We need to move these properties to the document. This is a horrible hack.
+  PropertiesService.getDocumentProperties().setProperties(userProps.getProperties());
+  userProps.deleteAllProperties();
+}

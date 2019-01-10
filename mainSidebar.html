@@ -43,6 +43,9 @@
       </div>
     </div>
     </div>
+    <div id=branding-below>
+    MAE Purchase Automation System 2.0 beta.
+    </div>
   </body>
 </html>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -53,6 +56,13 @@
  */
 $(function()
 {
+  google.script.run.withSuccessHandler(
+    function ()
+    {
+      showInfo("Continuing setup...");
+    })
+    .withFailureHandler(showInfo) // Fails when not in setup mode
+    .handleSetup();
   $( "#tabs" ).tabs();
   var tooltips = $( "[title]" ).tooltip({
       position: {

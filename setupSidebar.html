@@ -80,7 +80,8 @@ function runSetUp()
   google.script.run.withSuccessHandler(
     function (urls) // urls is object with poUrl and formUrl
     {
-      var msg = "Finished! Check your <a class=\"link\" href=\""+urls.poUrl+"\">purchase sheet</a> and <a class=\"link\" href=\""+urls.formUrl+"\">form</a>";
+      var msg = "Finished! Check your <a class=\"link\" href=\""+urls.formUrl+"\">form</a>\
+<br><strong>Then, open your <a class=\"link\" href=\""+urls.poUrl+"\">purchase sheet</a> to finish configuration.</strong>";
       progressUpdate(msg);
       script.google.run.showAlert("\nYou need to set up your PO template in the new purchase spreadsheet.\n\
 We generated some named ranges corresponding to relevant fields.\

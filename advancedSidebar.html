@@ -1,4 +1,4 @@
-<div id="generalSidebar" class="tabcontent">
+<div id="advancedSidebar" class="tabcontent">
   <form onsubmit="return(false)">
   <!--separator-->
   <div class="block"></div>
@@ -112,15 +112,15 @@ function reset()
   .withSuccessHandler(function(didClear) {
     if (didClear)
     {
-      showInfo("Successfully reset configuration");
+      showInfo("Successfully reset configuration. Please reload this sidebar.");
     }
     else
     {
       showInfo("Reset canceled");
     }
   })
-  .withFailureHandler(function () {
-    showError("Failed to reset configuration")
+  .withFailureHandler(function (e) {
+    showError("Failed to reset configuration " + e)
   })
   .withUserObject(this)
   .clearPropertiesWithModalConfirm();

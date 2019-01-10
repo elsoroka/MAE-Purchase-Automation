@@ -99,7 +99,8 @@ function showPicker(name, type)
       .setWidth(600)
       .setHeight(425)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Select a file ');
+  var typename = ((type == 'f') ? "folder" : "file");
+  SpreadsheetApp.getUi().showModalDialog(html, 'Select a '+typename);
 }
 
 /**
@@ -164,7 +165,7 @@ function clearPropertiesWithModalConfirm()
     PropertiesService.getDocumentProperties().deleteAllProperties();
     removeTriggers(SpreadsheetApp.getActiveSpreadsheet());
   }
-  return (response == ui.button.YES) ? true : false; // true: delete occurred. false: delete was canceled.
+  return (response == ui.Button.YES) ? true : false; // true: delete occurred. false: delete was canceled.
 }
 
 /**
@@ -175,8 +176,6 @@ function getSetupPropertiesRunSetup(params)
   var props = PropertiesService.getDocumentProperties();
   params.poTemplateId = props.getProperty("file-po-template");
   params.folder = props.getProperty("folder-root");
-  // clean up the document properties since this is NOT a working system and may be some random file
-  props.deleteAllProperties();
   // Check we have a PO template file
   if (params.poTemplateId == null) // there was no property! Halt
   {
@@ -186,9 +185,12 @@ function getSetupPropertiesRunSetup(params)
   {
     throw("Please select a folder to install the PO system");
   }
-  var poMaster = setupEverything(params);
-  installDefaultPrefs(poMaster);
-  return poMaster.getUrl();
+  // clean up the document properties since this is NOT a working system and may be some random file
+  props.deleteAllProperties();
+  var result = setupEverything(params);
+  installDefaultPrefs(result.poSheet);
+  return {poUrl:result.poSheet.getUrl(),
+          formUrl:result.poForm.getEditUrl()};
 }
   
 /**

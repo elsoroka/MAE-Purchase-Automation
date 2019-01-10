@@ -8,12 +8,9 @@
     <link rel="stylesheet" href="https://cdn.rawgit.com/mogsdad/e13b618322ec87ca8d28/raw/f1f96f797dadf968276c63de4df0bb04fb80646f/googly-jquery-ui.css">
     <!--nice symbols-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-  <?!= include('style'); ?>
-  
+    <?!= include('style'); ?>
   </head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
   <body>
   <?var properties = PropertiesService.getDocumentProperties();?>
     <!-- Tab links -->
@@ -21,21 +18,17 @@
       <ul>
       <?if (properties.getProperty("system-enable") != null) // Document properties were found; this is a valid system
       {?>
-        <li><a href="#generalSidebar" id="default">General</a></li>
-        <li><a href="#slackSidebar">Slack</a></li>
+        <li><a href="#slackSidebar" id="default">Slack</a></li>
         <li><a href="#emailSidebar">Email</a></li>
-      <?}
-      else
-      {?>
-        <li><a href="#setupSidebar" id="default">Setup</a></li>
+        <li><a href="#advancedSidebar">Advanced</a></li>
       <?}?>
       </ul>
     <div class="sidebar-branding-below" id="content">
       <?if (properties.getProperty("system-enable") != null) // Document properties were found; this is a valid system
       {?>
-      <?!= includeTemplate('generalSidebar'); ?>
       <?!= include('slackSidebar'); ?>
       <?!= includeTemplate('emailSidebar'); ?>
+      <?!= includeTemplate('advancedSidebar'); ?>
       <?}
       else
       {?>
@@ -52,8 +45,9 @@
     </div>
   </body>
 </html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <script>
-
 /**
  * Set up tabs and tooltips on page load
  */

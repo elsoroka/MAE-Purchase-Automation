@@ -7,14 +7,15 @@
  */
 function setupEverything(params)
 {
-  //var poMaster = makePoMasterSheet(params);
   var poMaster = SpreadsheetApp.openById("1oTFMIGbdADs5Hk3SA9V1nrZFBDrHjp9jTWLwI3jA-L4");
-  /*var poForm = makePoForm(params, poMaster.getId());
+  var poForm = FormApp.openById("1HMqExnCDEdHJLmMj6TnH__iyK1hrHqETNrjWY6nn9WU");
+  /*var poMaster = makePoMasterSheet(params);
+  var poForm = makePoForm(params, poMaster.getId());
   // Install the "on form submit" trigger for poMaster
-  installTrigger(poMaster);
+  installTrigger(poMaster);*/
   // Install default params on the new poMaster spreadsheet
   installDefaultPrefs(poMaster);
-  // Save the new properties*/
+  // Save the new properties
   var openFolder = DriveApp.getFileById(params.folder);
   SpreadsheetApp.setActiveSpreadsheet(poMaster);
   PropertiesService.getDocumentProperties().setProperties({
@@ -29,7 +30,8 @@ function setupEverything(params)
     "file-purchase-sheet-url":poMaster.getUrl(),
     "file-po-template-url":SpreadsheetApp.openById(params.poTemplateId).getUrl(),
     });
-  return poMaster;
+  return {poSheet:poMaster,
+          poForm:poForm};
 }
 
 /**

@@ -48,8 +48,6 @@ function installDefaultPrefs(ss)
    "email-name":"PO System",
    "email-body":"Your PO is attached",
    "email-include-link":"false",
-   "po-statuses":"In Progress,Complete,Canceled,Submitted",
-   "po-start-status":"Submitted",
   }
   PropertiesService.getDocumentProperties().setProperties(defaults);
 }
@@ -269,12 +267,20 @@ function purchaseForm(e)
 function handleSetup()
 {
   var userProps = PropertiesService.getUserProperties();
-  // Fail if not in setup
   if (userProps.getKeys().length == 0)
   {
-    throw("not in setup");
+    return; // we are not in setup, end
   }
-  // We need to move these properties to the document. This is a horrible hack.
-  PropertiesService.getDocumentProperties().setProperties(userProps.getProperties());
-  userProps.deleteAllProperties();
+  var setupFileId = userProps.getProperty("file-purchase-sheet");
+  if (setupFileId == SpreadsheetApp.getActiveSpreadsheet().getId())
+  {
+    // We need to move these properties to the document. This is a horrible hack.
+    PropertiesService.getDocumentProperties().setProperties(userProps.getProperties());
+    userProps.deleteAllProperties();
+    // Install the "on form submit" trigger
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    installTrigger(ss);
+    // Install default params on the new spreadsheet
+    installDefaultPrefs(ss);
+  }
 }

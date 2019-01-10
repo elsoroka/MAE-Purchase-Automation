@@ -9,10 +9,6 @@ function setupEverything(params)
 {
   var poMaster = makePoMasterSheet(params);
   var poForm = makePoForm(params, poMaster.getId());
-  // Install the "on form submit" trigger for poMaster
-  installTrigger(poMaster);
-  // Install default params on the new poMaster spreadsheet
-  installDefaultPrefs(poMaster);
   // Save the new properties
   var openFolder = DriveApp.getFileById(params.folder);
   SpreadsheetApp.setActiveSpreadsheet(poMaster);
@@ -255,7 +251,7 @@ function addTextItemsHelper(form, textItems, number)
   for (var i=0; i<len; ++i)
   {
     var item = form.addTextItem()
-      .setTitle((number == undefined) ? textItems[i].title : "Line "+i+textItems[i].title) // Optionally enumerate items with provided number
+      .setTitle((number == undefined) ? textItems[i].title : "Line "+number+" "+textItems[i].title) // Optionally enumerate items with provided number
       .setRequired(textItems[i].required)
       .setHelpText(textItems[i].help);
     if (textItems[i].validation != null)

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<script>
+$(function() // See if this can run FIRST so the correct tabs load
+{
+  google.script.run.handleSetup();
+});
+</script>
 <html>
   <head>
     <base target="_top">
@@ -56,13 +62,6 @@
  */
 $(function()
 {
-  google.script.run.withSuccessHandler(
-    function ()
-    {
-      showInfo("Continuing setup...");
-    })
-    .withFailureHandler(showInfo) // Fails when not in setup mode
-    .handleSetup();
   $( "#tabs" ).tabs();
   var tooltips = $( "[title]" ).tooltip({
       position: {

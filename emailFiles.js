@@ -1,9 +1,9 @@
 function sendTestEmail(recipient)
 {
-  var prefs = emailGetPrefs();
+  var prefs = PropertiesService.getDocumentProperties();
   var options = {
-    name:prefs["email-name"],
-    cc:prefs["email-cc"],
+    name:prefs.getProperty("email-name"),
+    cc:prefs.getProperty("email-cc"),
   };
   MailApp.sendEmail(recipient,
     "Test Email",
